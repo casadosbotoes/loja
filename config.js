@@ -19,9 +19,9 @@ window.CDB_CONFIG = {
 
   /* ---------- Contato / WhatsApp ---------- */
   whatsapp: {
-    // [PREENCHER] Número do WhatsApp da loja em formato internacional, só dígitos
-    // Ex: 11 91234-5678 → "5511912345678"
-    numero: "5511999999999",
+    // Número do WhatsApp da loja em formato internacional, só dígitos
+    // Formato: 55 + DDD + número (ex: 55 16 99184-2936 → "5516991842936")
+    numero: "5516991842936",
     mensagemPadrao: "Olá! Tenho interesse em produtos da Casa dos Botões.",
   },
 
@@ -30,10 +30,12 @@ window.CDB_CONFIG = {
   // navegador a partir da chave Pix da loja. O cliente paga direto
   // na conta, sem intermediários e sem taxa. Não usa Mercado Pago.
   pix: {
-    // [PREENCHER] Chave Pix da loja (CPF, e-mail, telefone ou aleatória)
-    chave: "casadosbotoes@email.com",
-    tipoChave: "email", // "cpf" | "cnpj" | "email" | "phone" | "random"
-    // [PREENCHER] Nome do recebedor conforme está no banco
+    // Chave Pix da loja (telefone) — formato: 55 + DDD + número (só dígitos)
+    // O BR Code gera o QR Code no padrão EMV do Banco Central usando
+    // "+5516991842936" como chave no QR Code.
+    chave: "5516991842936",
+    tipoChave: "phone", // "cpf" | "cnpj" | "email" | "phone" | "random"
+    // [PREENCHER] Nome do recebedor conforme está no banco (até 25 chars, sem acento)
     nomeRecebedor: "CASA DOS BOTOES",
     cidadeRecebedor: "SAO PAULO",
     // Identificador da transação (opcional, máximo 25 chars alfanuméricos)
