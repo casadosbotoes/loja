@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Casa dos Botões - Tudo para sua criatividade. Mais de 13 mil botões em estoque: plástico, madeira, metal, infantis, linhas, aviamentos, agulhas e kits.">
+  <meta name="theme-color" content="#6b1f2a">
+  <meta property="og:title" content="Casa dos Botões - Tudo para sua criatividade">
+  <meta property="og:description" content="Mais de 13 mil botões em estoque. Compre por Pix, cartão ou WhatsApp com frete grátis acima de R$199.">
+  <meta property="og:type" content="website">
+  <title>Casa dos Botões - Tudo para sua criatividade</title>
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%236b1f2a'/><circle cx='16' cy='16' r='4' fill='%23f6ecd9'/><circle cx='8' cy='8' r='1.5' fill='%23f6ecd9'/><circle cx='24' cy='8' r='1.5' fill='%23f6ecd9'/><circle cx='8' cy='24' r='1.5' fill='%23f6ecd9'/><circle cx='24' cy='24' r='1.5' fill='%23f6ecd9'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ====== Header ====== -->
+  <header class="site-header" id="topo">
+    <div class="container header-inner">
+      <a href="#topo" class="logo" aria-label="Casa dos Botões">
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="40" height="40" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="none" stroke="#6b1f2a" stroke-width="2.5"/>
+            <circle cx="20" cy="20" r="5" fill="#6b1f2a"/>
+            <circle cx="11" cy="11" r="1.8" fill="#6b1f2a"/>
+            <circle cx="29" cy="11" r="1.8" fill="#6b1f2a"/>
+            <circle cx="11" cy="29" r="1.8" fill="#6b1f2a"/>
+            <circle cx="29" cy="29" r="1.8" fill="#6b1f2a"/>
+          </svg>
+        </span>
+        <span class="logo-text">
+          <span class="logo-name">Casa dos Botões</span>
+          <span class="logo-slogan">Tudo para sua criatividade</span>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="#categorias">Categorias</a>
+        <a href="#produtos">Produtos</a>
+        <a href="#diferenciais">Diferenciais</a>
+        <a href="#contato">Contato</a>
+      </nav>
+
+      <div class="header-actions">
+        <form class="search-box" role="search" onsubmit="return false">
+          <input type="search" id="busca" placeholder="Buscar botões..." aria-label="Buscar produtos" autocomplete="off">
+          <button type="submit" aria-label="Buscar" tabindex="-1">⌕</button>
+        </form>
+        <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span class="cart-count" id="cartCount" hidden>0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== Hero ====== -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-content">
+        <span class="hero-eyebrow">Armarinho online desde 2025</span>
+        <h1 class="hero-title">+ de 13 mil botões<br>para a sua criatividade.</h1>
+        <p class="hero-subtitle">Botões de plástico, madeira e metal, linhas, agulhas, aviamentos e kits completos. Venda em pequenas e grandes quantidades, com entrega para todo Brasil.</p>
+        <div class="hero-actions">
+          <a href="#produtos" class="btn btn-primary">Ver produtos</a>
+          <a href="#categorias" class="btn btn-outline">Explorar categorias</a>
+        </div>
+        <div class="hero-badges">
+          <span class="badge badge-pix">Pix</span>
+          <span class="badge badge-card">Cartão</span>
+          <span class="badge badge-wpp">WhatsApp</span>
+          <span class="badge badge-free">Frete grátis acima de R$199</span>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="visual-circle v1"></div>
+        <div class="visual-circle v2"></div>
+        <div class="visual-circle v3"></div>
+        <div class="visual-grid">
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Features bar ====== -->
+  <section class="features">
+    <div class="container features-grid">
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">⌁</span>
+        <div>
+          <strong>Pix na hora</strong>
+          <span>QR Code gerado no checkout</span>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">⌂</span>
+        <div>
+          <strong>Cartão via Mercado Pago</strong>
+          <span>Até 12x sem juros</span>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">⌖</span>
+        <div>
+          <strong>Frete calculado</strong>
+          <span>API dos Correios, PAC e SEDEX</span>
+        </div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon" aria-hidden="true">☺</span>
+        <div>
+          <strong>Atendimento WhatsApp</strong>
+          <span>Seg-Sex, 9h às 18h</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Categorias ====== -->
+  <section class="categorias" id="categorias">
+    <div class="container">
+      <header class="section-header">
+        <p class="section-eyebrow">Navegue</p>
+        <h2 class="section-title">Categorias</h2>
+        <p class="section-subtitle">Tudo que sua oficina de costura precisa, organizado por tipo.</p>
+      </header>
+      <div class="categorias-grid" id="categoriasGrid"><!-- preenchido por JS --></div>
+    </div>
+  </section>
+
+  <!-- ====== Produtos ====== -->
+  <section class="produtos" id="produtos">
+    <div class="container">
+      <header class="section-header">
+        <p class="section-eyebrow">Em destaque</p>
+        <h2 class="section-title">Nossos produtos</h2>
+        <p class="section-subtitle">Botões selecionados com acabamento premium. Adicione ao carrinho e calcule o frete no checkout.</p>
+      </header>
+
+      <div class="produtos-toolbar">
+        <div class="filtros" id="filtros" role="tablist">
+          <button class="filtro active" data-categoria="todos">Todos</button>
+          <!-- preenchido por JS -->
+        </div>
+        <div class="ordenar">
+          <label for="ordenar">Ordenar:</label>
+          <select id="ordenar">
+            <option value="destaque">Destaques primeiro</option>
+            <option value="preco-asc">Menor preço</option>
+            <option value="preco-desc">Maior preço</option>
+            <option value="nome">Nome (A-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="produtos-grid" id="produtosGrid"><!-- preenchido por JS --></div>
+      <p class="produtos-empty" id="produtosEmpty" hidden>Nenhum produto encontrado para o filtro atual.</p>
+    </div>
+  </section>
+
+  <!-- ====== Diferenciais ====== -->
+  <section class="diferenciais" id="diferenciais">
+    <div class="container">
+      <div class="diferenciais-grid">
+        <div class="diferencial-card">
+          <span class="dif-icon" aria-hidden="true">▦</span>
+          <h3>Kits sob medida</h3>
+          <p>Montamos kits personalizados por projeto: costura, crochê, mending, customização. Fale com a gente pelo WhatsApp com o seu pedido que montamos o kit ideal para você.</p>
+        </div>
+        <div class="diferencial-card">
+          <span class="dif-icon" aria-hidden="true">∞</span>
+          <h3>Variedade enorme</h3>
+          <p>Mais de 13 mil modelos de botões em estoque, das mais diversas cores, tamanhos (de 8mm a 40mm) e materiais. Se não encontrar no site, pergunte no WhatsApp.</p>
+        </div>
+        <div class="diferencial-card">
+          <span class="dif-icon" aria-hidden="true">▲</span>
+          <h3>Pequenas e grandes quantidades</h3>
+          <p>Vendemos desde 1 pacote com 6 unidades até pedidos para confecção industrial. Preços especiais para atacado a partir de 50 pacotes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== CTA WhatsApp ====== -->
+  <section class="cta-whatsapp" id="contato">
+    <div class="container cta-inner">
+      <div class="cta-content">
+        <h2>Não encontrou o que procurava?</h2>
+        <p>Chame a gente no WhatsApp. Em estoque temos muito mais que o site: linhas, agulhas, aviamentos e botões dos mais variados modelos.</p>
+        <a href="#" class="btn btn-whatsapp" id="ctaWhatsapp">Falar no WhatsApp</a>
+      </div>
+      <div class="cta-image" aria-hidden="true">
+        <div class="cta-circle c1"></div>
+        <div class="cta-circle c2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== Footer ====== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-name">Casa dos Botões</span>
+        <p class="footer-slogan">Tudo para sua criatividade</p>
+        <p class="footer-addr">São Paulo / SP — Atendimento de segunda a sexta, 9h às 18h</p>
+      </div>
+      <nav class="footer-cols">
+        <div>
+          <h4>Loja</h4>
+          <a href="#produtos">Produtos</a>
+          <a href="#categorias">Categorias</a>
+          <a href="#diferenciais">Diferenciais</a>
+        </div>
+        <div>
+          <h4>Pagamento</h4>
+          <a href="#">Pix</a>
+          <a href="#">Cartão via Mercado Pago</a>
+          <a href="#">Frete grátis acima de R$199</a>
+        </div>
+        <div>
+          <h4>Contato</h4>
+          <a href="#" id="footerWhatsapp">WhatsApp</a>
+          <a href="#">Instagram</a>
+          <a href="#">E-mail</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <small>© <span id="anoAtual"></span> Casa dos Botões — CNPJ a fornecer. Site estático hospedado no GitHub Pages.</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ====== Cart drawer ====== -->
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true" aria-label="Carrinho">
+    <div class="cart-header">
+      <h3>Seu carrinho</h3>
+      <button class="cart-close" id="closeCart" aria-label="Fechar carrinho">×</button>
+    </div>
+    <div class="cart-body" id="cartBody"><!-- preenchido por JS --></div>
+    <div class="cart-footer" id="cartFooter">
+      <div class="cart-subtotal">
+        <span>Subtotal</span>
+        <strong id="cartSubtotal">R$ 0,00</strong>
+      </div>
+      <button class="btn btn-primary btn-block" id="checkoutBtn">Finalizar compra →</button>
+      <button class="btn-ghost btn-block" id="continueShopping">Continuar comprando</button>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay" hidden></div>
+
+  <!-- ====== Checkout modal ====== -->
+  <div class="modal" id="checkoutModal" aria-hidden="true" role="dialog" aria-labelledby="checkoutTitle">
+    <div class="modal-content modal-large">
+      <header class="modal-header">
+        <h3 id="checkoutTitle">Finalizar compra</h3>
+        <button class="modal-close" id="closeCheckout" aria-label="Fechar">×</button>
+      </header>
+      <div class="modal-body" id="checkoutBody">
+        <!-- Etapa 1: Identificação + Frete -->
+        <div class="checkout-step active" id="step-shipping">
+          <h4>1. Dados de entrega</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ck-nome">Nome completo *</label>
+              <input type="text" id="ck-nome" placeholder="Seu nome" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="ck-telefone">Telefone / WhatsApp *</label>
+              <input type="tel" id="ck-telefone" placeholder="(11) 90000-0000" autocomplete="tel">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-group-cep">
+              <label for="ck-cep">CEP *</label>
+              <input type="text" id="ck-cep" placeholder="00000-000" maxlength="9" inputmode="numeric" autocomplete="postal-code">
+              <button class="btn btn-small" id="ck-calcular" type="button">Calcular frete</button>
+            </div>
+            <div class="form-group">
+              <label for="ck-endereco">Endereço</label>
+              <input type="text" id="ck-endereco" placeholder="Rua, número" autocomplete="street-address" disabled>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ck-cidade">Cidade</label>
+              <input type="text" id="ck-cidade" placeholder="Cidade" autocomplete="address-level2" disabled>
+            </div>
+            <div class="form-group form-group-small">
+              <label for="ck-uf">UF</label>
+              <input type="text" id="ck-uf" placeholder="SP" maxlength="2" autocomplete="address-level1" disabled>
+            </div>
+          </div>
+
+          <div class="shipping-options" id="shippingOptions">
+            <p class="shipping-empty">Preencha o CEP e clique em "Calcular frete" para ver as opções de entrega.</p>
+          </div>
+
+          <div class="checkout-totals" id="checkoutTotals" hidden>
+            <div class="row"><span>Subtotal produtos</span><span id="ck-subtotal">R$ 0,00</span></div>
+            <div class="row"><span>Frete</span><span id="ck-frete">—</span></div>
+            <div class="row row-total"><span>Total</span><strong id="ck-total">R$ 0,00</strong></div>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="goToPayment" disabled>Continuar para pagamento →</button>
+        </div>
+
+        <!-- Etapa 2: Pagamento -->
+        <div class="checkout-step" id="step-payment">
+          <h4>2. Forma de pagamento</h4>
+          <div class="payment-methods" id="paymentMethods">
+            <!-- preenchido por JS de acordo com config -->
+          </div>
+
+          <div class="payment-content" id="paymentContent"></div>
+
+          <div class="checkout-actions">
+            <button class="btn-ghost" id="backToShipping">← Voltar</button>
+            <button class="btn btn-primary" id="confirmOrder" disabled>Confirmar pedido</button>
+          </div>
+        </div>
+
+        <!-- Etapa 3: Confirmação -->
+        <div class="checkout-step" id="step-confirm">
+          <div class="confirm-icon">✓</div>
+          <h4>Pedido confirmado!</h4>
+          <p id="confirmMsg"></p>
+          <div id="pixQrArea"></div>
+          <div class="checkout-actions">
+            <a class="btn btn-whatsapp btn-block" id="sendOrderWhatsapp" href="#">Enviar comprovante no WhatsApp</a>
+            <button class="btn-ghost btn-block" id="closeAfterConfirm">Concluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Product modal (detalhes) ====== -->
+  <div class="modal" id="productModal" aria-hidden="true" role="dialog" aria-labelledby="productModalTitle">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="productModalTitle">Produto</h3>
+        <button class="modal-close" id="closeProductModal" aria-label="Fechar">×</button>
+      </header>
+      <div class="modal-body" id="productModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ====== Toast ====== -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ====== Scripts ====== -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
+  <script src="config.js"></script>
+  <script src="products.js"></script>
+  <script src="js/pix.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/shipping.js" defer></script>
+  <script src="js/checkout.js" defer></script>
+  <script src="js/store.js" defer></script>
+</body>
+</html>

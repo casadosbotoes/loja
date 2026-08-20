@@ -1,0 +1,16 @@
+# Casa dos Botões — ambiente de desenvolvimento
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependências (se um dia usar)
+node_modules/

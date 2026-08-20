@@ -1,0 +1,2 @@
+# Disable Jekyll processing so GitHub Pages serves everything as-is
+# (especially folders starting with underscores, if any are added later)
