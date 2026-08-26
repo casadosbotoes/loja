@@ -126,7 +126,14 @@
       cont.innerHTML = '<p class="shipping-empty">Nenhum serviço disponível para o CEP informado. Tente novamente.</p>';
       return;
     }
-    cont.innerHTML = resultados.map((r, i) => `
+
+    // Aviso de fallback (frete estimado) — aparece no topo da lista
+    const algumFallback = resultados.some(r => r.origem === 'fallback-fixo');
+    const aviso = algumFallback
+      ? `<div class="shipping-notice" role="status">⚠️ ${escapeHTML(resultados[0].aviso || 'Frete estimado — valor final confirmado no WhatsApp.')}</div>`
+      : '';
+
+    cont.innerHTML = aviso + resultados.map((r, i) => `
       <label class="shipping-option ${i === 0 ? 'selected' : ''}" data-codigo="${r.codigo}">
         <input type="radio" name="frete" value="${r.codigo}" ${i === 0 ? 'checked' : ''} hidden>
         <div class="shipping-option-info">

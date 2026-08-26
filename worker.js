@@ -21,10 +21,12 @@
  * 3. Dê o nome "casadosbotoes-worker" e clique em "Deploy"
  * 4. Clique em "Edit code" e cole TODO o conteúdo deste arquivo
  * 5. Vá em "Settings" → "Variables" e adicione:
- *      MP_ACCESS_TOKEN   = <seu access token do MP>
- *      CORREIOS_CONTRATO = <seu contrato dos Correios>
- *      CORREIOS_CARTAO   = <seu cartão de postagem dos Correios>
+ *      MP_ACCESS_TOKEN   = <seu access token do MP>           (só se for usar cartão/Pix MP)
+ *      CORREIOS_CONTRATO = <seu contrato dos Correios>         (OPCIONAL — só se tiver contrato)
+ *      CORREIOS_CARTAO   = <seu cartão de postagem dos Correios> (OPCIONAL — só se tiver contrato)
  *   Marque como "Secret" (não ficam visíveis depois de salvas)
+ *   → Sem contrato, o Worker usa a API pública (PAC 04510 / SEDEX 04014)
+ *   → Com contrato, usa serviços com desconto (PAC 03298 / SEDEX 03220)
  * 6. Salve e faça "Deploy"
  * 7. Copie a URL do Worker (algo como:
  *    https://casadosbotoes-worker.seu-usuario.workers.dev)
@@ -116,20 +118,26 @@ function jsonOk(headers, data) {
 }
 
 /* ---------- Correios ---------- */
+// Modos de operação:
+//   1. COM contrato: usa credenciais (CORREIOS_CONTRATO + CORREIOS_CARTAO)
+//      e serviços com contrato (03298 PAC, 03220 SEDEX) — preços com desconto.
+//   2. SEM contrato: chama a API pública sem auth, usando serviços
+//      sem contrato (04510 PAC, 04014 SEDEX) — preços de balcão.
+//      O campo "contrato" pode vir vazio do front-end (config.js) ou
+//      das variáveis de ambiente do Worker.
 async function handleCorreios(body, headers, env) {
   const { cepOrigem, cepDestino, pacote, servicos } = body;
-  const contrato = body.contrato || env.CORREIOS_CONTRATO;
-  const cartao = body.cartaoPostagem || env.CORREIOS_CARTAO;
+  const contrato = body.contrato || env.CORREIOS_CONTRATO || '';
+  const cartao = body.cartaoPostagem || env.CORREIOS_CARTAO || '';
 
   if (!cepOrigem || !cepDestino || !pacote || !servicos) {
     return jsonError(headers, 400, 'Parâmetros incompletos');
   }
-  if (!contrato || !cartao) {
-    return jsonError(headers, 500, 'Credenciais dos Correios não configuradas');
-  }
 
-  // Auth: Basic com contrato:cartão
-  const auth = btoa(`${contrato}:${cartao}`);
+  const temContrato = contrato && cartao;
+  const authHeader = temContrato
+    ? { 'Authorization': `Basic ${btoa(`${contrato}:${cartao}`)}` }
+    : {}; // sem contrato: API pública, sem header de auth
 
   const resultados = [];
   for (const codigo of servicos) {
@@ -151,7 +159,7 @@ async function handleCorreios(body, headers, env) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth}`,
+        ...authHeader,
       },
       body: JSON.stringify(reqBody),
     });
@@ -164,15 +172,19 @@ async function handleCorreios(body, headers, env) {
     }
     const data = await resp.json();
     const r = Array.isArray(data) ? data[0] : data;
+    const nomeMap = { '04510': 'PAC', '04014': 'SEDEX', '03298': 'PAC', '03220': 'SEDEX' };
     resultados.push({
       codigo,
-      nome: r?.descServico || (codigo === '03298' ? 'PAC' : codigo === '03220' ? 'SEDEX' : codigo),
+      nome: r?.descServico || nomeMap[codigo] || codigo,
       descricao: r?.descServico || '',
       valor: parseFloat(r?.valor || r?.preco || '0') || 0,
       prazo: parseInt(r?.prazoEntrega || '0', 10) || null,
     });
   }
 
+  if (resultados.length === 0) {
+    return jsonError(headers, 502, 'Correios não retornou nenhum serviço válido (verifique CEPs e códigos de serviço).');
+  }
   return jsonOk(headers, { resultados });
 }
 

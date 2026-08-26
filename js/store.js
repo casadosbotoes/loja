@@ -271,7 +271,7 @@
     const anoEl = $('anoAtual');
     if (anoEl) anoEl.textContent = ano;
 
-    // Link do WhatsApp no CTA e no rodapé
+    // Link do WhatsApp no CTA, rodapé e botão flutuante
     const numero = (global.CDB_CONFIG?.whatsapp?.numero || '').replace(/\D/g, '');
     const msgPadrao = global.CDB_CONFIG?.whatsapp?.mensagemPadrao || 'Olá, Casa dos Botões!';
     const url = `https://wa.me/${numero}?text=${encodeURIComponent(msgPadrao)}`;
@@ -279,6 +279,8 @@
     if (cta) cta.href = url;
     const footer = $('footerWhatsapp');
     if (footer) footer.href = url;
+    const fab = $('whatsappFab');
+    if (fab) fab.href = url;
   }
 
   /* ---------- Init ---------- */
