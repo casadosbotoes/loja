@@ -22,8 +22,8 @@ window.CDB_CONFIG = {
   /* ---------- Contato / WhatsApp ---------- */
   whatsapp: {
     // Número do WhatsApp da loja em formato internacional, só dígitos
-    // Formato: 55 + DDD + número (ex: 55 16 99184-2936 → "5516991842936")
-    numero: "5516991842936",
+    // Formato: 55 + DDD + número (ex: 55 16 99232-8650 → "5516992328650")
+    numero: "5516992328650",
     mensagemPadrao: "Olá! Tenho interesse em produtos da Casa dos Botões.",
   },
 
@@ -34,8 +34,8 @@ window.CDB_CONFIG = {
   pix: {
     // Chave Pix da loja (telefone) — formato: 55 + DDD + número (só dígitos)
     // O BR Code gera o QR Code no padrão EMV do Banco Central usando
-    // "+5516991842936" como chave no QR Code.
-    chave: "5516991842936",
+    // "+5516992328650" como chave no QR Code.
+    chave: "5516992328650",
     tipoChave: "phone", // "cpf" | "cnpj" | "email" | "phone" | "random"
     // [PREENCHER] Nome do recebedor conforme está no banco (até 25 chars, sem acento)
     nomeRecebedor: "CASA DOS BOTOES",
@@ -107,8 +107,8 @@ window.CDB_CONFIG = {
     ativo: true,
     aviso: "Frete estimado (valor online indisponível). Confirmaremos o valor final no WhatsApp.",
     valores: [
-      { codigo: "04510", nome: "PAC", descricao: "Econômico, 5-9 dias úteis", valor: 28.00, prazo: 7 },
-      { codigo: "04014", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis", valor: 45.00, prazo: 3 },
+      { codigo: "04510", nome: "PAC", descricao: "Econômico, 5-9 dias úteis", valor: 10.00, prazo: 7 },
+      { codigo: "04014", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis", valor: 15.00, prazo: 3 },
     ],
   },
 
