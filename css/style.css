@@ -636,6 +636,18 @@ ul { list-style: none; }
 .shipping-option-desc { font-size: 0.8rem; color: var(--c-texto-claro); }
 .shipping-option-price { font-weight: 700; color: var(--c-vinho); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; }
 
+/* Aviso de frete estimado (fallback) */
+.shipping-notice {
+  background: #fff7e6;
+  border: 1px solid #f5c97a;
+  color: #8a5a0a;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
 .checkout-totals {
   margin: 20px 0;
   padding: 20px;

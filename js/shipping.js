@@ -64,7 +64,8 @@
   //   cepDestino: string (8 dígitos)
   //   pacote: { peso, comprimento, largura, altura }  (em gramas e centímetros)
   // Retorna:
-  //   array de { codigo, nome, descricao, valor, prazo }
+  //   array de { codigo, nome, descricao, valor, prazo, origem }
+  //   origem: 'worker' | 'api-direta' | 'proxy' | 'fallback-fixo'
   async function calcularFrete(cepDestino, pacote) {
     const cfg = global.CDB_CONFIG || {};
     const corr = cfg.correios || {};
@@ -75,29 +76,62 @@
     // Serviços a consultar
     const servicos = corr.servicos && corr.servicos.length
       ? corr.servicos
-      : [{ codigo: '03298', nome: 'PAC', descricao: 'Econômico' }, { codigo: '03220', nome: 'SEDEX', descricao: 'Rápido' }];
+      : [{ codigo: '04510', nome: 'PAC', descricao: 'Econômico' }, { codigo: '04014', nome: 'SEDEX', descricao: 'Rápido' }];
 
-    // Tenta primeira estratégia: Worker configurado
+    const erros = [];
+
+    // Estratégia 1: Worker configurado
     if (corr.workerUrl) {
       try {
-        return await calcularViaWorker(cepDestino, pacote, servicos, corr.workerUrl);
+        const r = await calcularViaWorker(cepDestino, pacote, servicos, corr.workerUrl);
+        return marcarOrigem(r, 'worker');
       } catch (e) {
+        erros.push('worker: ' + e.message);
         console.warn('[shipping] Worker falhou:', e.message, '— tentando fallback');
       }
     }
 
-    // Segunda estratégia: chamada direta (vai falhar CORS), depois fallback CORS proxy público
+    // Estratégia 2: chamada direta à API (provavelmente falha CORS, mas tenta)
     try {
-      return await calcularViaCorreiosDirect(cepDestino, pacote, servicos, corr);
+      const r = await calcularViaCorreiosDirect(cepDestino, pacote, servicos, corr);
+      return marcarOrigem(r, 'api-direta');
     } catch (directErr) {
+      erros.push('api-direta: ' + directErr.message);
       console.warn('[shipping] direto falhou:', directErr.message, '— tentando proxy');
+      // Estratégia 3: CORS proxy público
       try {
-        return await calcularViaCorreiosProxy(cepDestino, pacote, servicos, corr);
+        const r = await calcularViaCorreiosProxy(cepDestino, pacote, servicos, corr);
+        return marcarOrigem(r, 'proxy');
       } catch (proxyErr) {
-        console.error('[shipping] todas as tentativas falharam:', proxyErr);
-        throw new Error('Não foi possível calcular o frete agora. Tente novamente ou chame no WhatsApp para confirmar o valor.');
+        erros.push('proxy: ' + proxyErr.message);
+        console.warn('[shipping] proxy falhou:', proxyErr.message, '— usando fallback fixo');
       }
     }
+
+    // Estratégia 4 (FINAL): fallback de frete fixo configurado
+    // Garante que o checkout nunca trave por falta de frete online.
+    const fb = cfg.freteFixoFallback;
+    if (fb && fb.ativo && fb.valores && fb.valores.length) {
+      const resultados = fb.valores.map(v => ({
+        codigo: v.codigo,
+        nome: v.nome,
+        descricao: v.descricao,
+        valor: v.valor,
+        prazo: v.prazo,
+        origem: 'fallback-fixo',
+        aviso: fb.aviso || '',
+      }));
+      console.warn('[shipping] usando fallback fixo. Erros:', erros.join(' | '));
+      return resultados;
+    }
+
+    // Se chegou aqui, não há fallback configurado — lança erro amigável
+    console.error('[shipping] todas as tentativas falharam:', erros.join(' | '));
+    throw new Error('Não foi possível calcular o frete agora. Tente novamente ou chame no WhatsApp para confirmar o valor.');
+  }
+
+  function marcarOrigem(resultados, origem) {
+    return resultados.map(r => ({ ...r, origem: r.origem || origem }));
   }
 
   /* ---------- Estratégia 1: Cloudflare Worker ---------- */

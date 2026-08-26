@@ -13,8 +13,10 @@ window.CDB_CONFIG = {
     name: "Casa dos Botões",
     slogan: "Tudo para sua criatividade",
     highlight: "+ de 13 mil botões para você!",
-    cepOrigem: "01000000", // [PREENCHER] CEP de origem das encomendas (apenas dígitos)
-    enderecoCidade: "São Paulo / SP", // [PREENCHER] cidade de origem
+    // Endereço real de origem das encomendas (Ribeirão Preto - SP)
+    cepOrigem: "14010100",
+    enderecoCidade: "Ribeirão Preto / SP",
+    enderecoCompleto: "Rua Visconde de Inhaúma, 580 - Sala 409 - Centro - Ribeirão Preto / SP - CEP 14010-100",
   },
 
   /* ---------- Contato / WhatsApp ---------- */
@@ -37,7 +39,7 @@ window.CDB_CONFIG = {
     tipoChave: "phone", // "cpf" | "cnpj" | "email" | "phone" | "random"
     // [PREENCHER] Nome do recebedor conforme está no banco (até 25 chars, sem acento)
     nomeRecebedor: "CASA DOS BOTOES",
-    cidadeRecebedor: "SAO PAULO",
+    cidadeRecebedor: "RIBEIRAO PRETO", // máximo 25 chars, sem acento
     // Identificador da transação (opcional, máximo 25 chars alfanuméricos)
     // Vai ser preenchido dinamicamente com o número do pedido
     identificadorPrefix: "CDB",
@@ -61,17 +63,22 @@ window.CDB_CONFIG = {
 
   /* ---------- Correios (cálculo de frete) ---------- */
   correios: {
-    // [PREENCHER] Credenciais da API dos Correios
+    // Credenciais da API dos Correios (OPCIONAL — só preencha se tiver contrato).
     // Cadastre-se em https://www.correios.com.br/precos-e-prazos-de-encomendas-e-servicos-online
-    // Pegue: contrato (10 dígitos), cartão de postagem (10 dígitos), senha
+    // Pegue: contrato (10 dígitos), cartão de postagem (10 dígitos), senha.
+    // Se ficar vazio, o site usa serviços SEM contrato (04510 PAC / 04014 SEDEX)
+    // via API pública — funciona, mas com preços de balcão (sem desconto de contrato).
     contrato: "",
     cartaoPostagem: "",
     // Se preenchido, usa o worker.js para fazer a chamada com CORS resolvido.
-    workerUrl: "", // se vazio, tenta direto + fallback CORS público
-    // Serviços de entrega disponíveis (PAC + SEDEX)
+    // RECOMENDADO em produção para 100% de confiabilidade.
+    workerUrl: "", // ex: "https://casadosbotoes-worker.seu-usuario.workers.dev"
+    // Serviços de entrega disponíveis.
+    // SEM contrato (qualquer um pode usar): 04510 PAC, 04014 SEDEX
+    // COM contrato (precisa preencher acima): 03298 PAC, 03220 SEDEX
     servicos: [
-      { codigo: "03298", nome: "PAC", descricao: "Econômico, 5-9 dias úteis" },
-      { codigo: "03220", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis" },
+      { codigo: "04510", nome: "PAC", descricao: "Econômico, 5-9 dias úteis" },
+      { codigo: "04014", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis" },
     ],
     // Dimensões padrão do pacote (1 pacote pequeno com botões)
     // Ajuste conforme o pedido: o JS multiplica peso por quantidade
@@ -87,6 +94,22 @@ window.CDB_CONFIG = {
   freteGratis: {
     ativo: true,
     valorMinimo: 199.0, // acima de R$199,00 o frete é grátis
+  },
+
+  /* ---------- Frete fixo (fallback) ----------
+   * Usado SOMENTE quando TODAS as estratégias online falham
+   * (API dos Correios fora do ar, proxy CORS bloqueado, etc).
+   * Garante que o cliente consiga finalizar a compra mesmo sem
+   * frete online. Os valores devem ser revisados conforme a média
+   * praticada pelos Correios para a sua região de origem.
+   */
+  freteFixoFallback: {
+    ativo: true,
+    aviso: "Frete estimado (valor online indisponível). Confirmaremos o valor final no WhatsApp.",
+    valores: [
+      { codigo: "04510", nome: "PAC", descricao: "Econômico, 5-9 dias úteis", valor: 28.00, prazo: 7 },
+      { codigo: "04014", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis", valor: 45.00, prazo: 3 },
+    ],
   },
 
   /* ---------- Configurações visuais ---------- */
