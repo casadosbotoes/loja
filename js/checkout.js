@@ -281,7 +281,23 @@
       state.pedido = {
         numero, subtotal, frete: freteValor, total, items, cliente,
         shippingOption: state.shippingOption,
+        dataHora: new Date(),
       };
+
+      // Sempre gera e baixa o .txt do pedido para o cliente ter uma
+      // cópia organizada e poder anexar no WhatsApp.
+      // O lojista recebe os mesmos dados via WhatsApp (em texto).
+      try {
+        if (global.CDBOrderTxt) {
+          global.CDBOrderTxt.baixarTxtPedido(state.pedido, {
+            paymentMethod: state.paymentMethod,
+            status: 'AGUARDANDO CONFIRMAÇÃO DE PAGAMENTO',
+          });
+          global.CDBCart?.showToast('Arquivo .txt do pedido baixado. Anexe no WhatsApp!');
+        }
+      } catch (e) {
+        console.warn('[checkout] erro ao gerar .txt:', e);
+      }
 
       // Caminho por método de pagamento
       if (state.paymentMethod === 'pix') {
@@ -330,14 +346,16 @@
 
     // Render step 3 com QR Code
     const msg = `Pedido <strong>${escapeHTML(numeroPedido)}</strong> no valor de <strong>${formatBRL(valor)}</strong> criado! Escaneie o QR Code abaixo com o app do seu banco para pagar via Pix.`;
-    $('confirmMsg').innerHTML = msg;
+    $('confirmMsg').innerHTML = msg +
+      `<p style="font-size:0.88rem;color:var(--c-texto-claro);margin-top:8px"> 📄 O arquivo <strong>pedido-${escapeHTML(numeroPedido)}.txt</strong> com todos os seus dados foi baixado automaticamente. Anexe no WhatsApp para agilizar a confirmação.</p>`;
     const qrArea = $('pixQrArea');
     qrArea.innerHTML = `
       <div class="pix-qr">
         ${qrUrl ? `<img src="${qrUrl}" alt="QR Code Pix" width="240" height="240">` : '<p>QR Code indisponível</p>'}
         <span class="pix-code" id="pixCodeText">${escapeHTML(brCode)}</span>
         <button class="pix-copy-btn" id="copyPixBtn" type="button">Copiar código Pix</button>
-      </div>`;
+      </div>
+      <button class="btn btn-outline btn-block" id="baixarTxtBtn" type="button" style="margin-top:12px">📄 Baixar pedido .txt novamente</button>`;
 
     // Botão copiar
     const copyBtn = $('copyPixBtn');
@@ -356,6 +374,17 @@
         copyBtn.textContent = 'Código copiado!';
         setTimeout(() => copyBtn.textContent = 'Copiar código Pix', 2000);
       });
+    });
+
+    // Botão de re-baixar o .txt
+    const baixarBtn = $('baixarTxtBtn');
+    if (baixarBtn) baixarBtn.addEventListener('click', () => {
+      if (global.CDBOrderTxt && state.pedido) {
+        global.CDBOrderTxt.baixarTxtPedido(state.pedido, {
+          paymentMethod: state.paymentMethod,
+          status: 'AGUARDANDO CONFIRMAÇÃO DE PAGAMENTO',
+        });
+      }
     });
 
     // Configura o botão de WhatsApp com o comprovante
@@ -434,28 +463,14 @@
     if (!numero) return '#';
 
     let msg = '';
-    if (state.pedido) {
-      msg = `Olá, Casa dos Botões! 👋\n\n`;
-      msg += `*Pedido ${state.pedido.numero}*\n\n`;
-      msg += `*Itens:*\n`;
-      for (const i of state.pedido.items) {
-        msg += `• ${i.qty}x ${i.nome} — ${formatBRL(i.preco * i.qty)}\n`;
-      }
-      msg += `\n*Subtotal:* ${formatBRL(state.pedido.subtotal)}\n`;
-      msg += `*Frete (${state.pedido.shippingOption?.nome || '—'}):* ${state.pedido.frete === 0 ? 'Grátis' : formatBRL(state.pedido.frete)}\n`;
-      msg += `*TOTAL:* ${formatBRL(state.pedido.total)}\n\n`;
-      msg += `*Cliente:* ${state.pedido.cliente.nome}\n`;
-      msg += `*Telefone:* ${state.pedido.cliente.telefone}\n`;
-      msg += `*Endereço:* ${state.pedido.cliente.endereco}, ${state.pedido.cliente.cidade}/${state.pedido.cliente.uf}\n`;
-      msg += `*CEP:* ${state.pedido.cliente.cep}\n\n`;
-      if (state.paymentMethod === 'pix') {
-        msg += `_Pagamento via Pix — enviarei o comprovante em seguida._\n`;
-        msg += `_ID do pedido: ${state.pedido.numero}_`;
-      } else if (state.paymentMethod === 'pix-mp' || state.paymentMethod === 'cartao') {
-        msg += `_Pagamento via Mercado Pago (${state.paymentMethod})._`;
-      } else {
-        msg += `_Quero finalizar este pedido com vocês._`;
-      }
+    if (state.pedido && global.CDBOrderTxt) {
+      // Usa o resumo organizado do módulo order-txt.js
+      msg = global.CDBOrderTxt.gerarResumoWhatsapp(state.pedido, {
+        paymentMethod: state.paymentMethod,
+      });
+    } else if (state.pedido) {
+      // Fallback: resumo simples se o módulo não carregou
+      msg = `Olá! Pedido ${state.pedido.numero} no valor de ${formatBRL(state.pedido.total)}.`;
     } else {
       msg = cfg.whatsapp?.mensagemPadrao || 'Olá! Tenho interesse em produtos da Casa dos Botões.';
     }
@@ -467,11 +482,22 @@
     const url = montarLinkWhatsapp();
     window.open(url, '_blank');
     goToStep('confirm');
-    $('confirmMsg').innerHTML = `Pedido <strong>${escapeHTML(state.pedido.numero)}</strong> registrado! Abra o WhatsApp para confirmar com a nossa equipe.`;
+    $('confirmMsg').innerHTML = `Pedido <strong>${escapeHTML(state.pedido.numero)}</strong> registrado! Abra o WhatsApp para confirmar com a nossa equipe.` +
+      `<p style="font-size:0.88rem;color:var(--c-texto-claro);margin-top:8px"> 📄 O arquivo <strong>pedido-${escapeHTML(state.pedido.numero)}.txt</strong> foi baixado. Anexe no WhatsApp para agilizar.</p>`;
     $('pixQrArea').innerHTML = `
-      <a class="btn btn-whatsapp btn-block" href="${url}" target="_blank">Abrir WhatsApp novamente</a>`;
+      <a class="btn btn-whatsapp btn-block" href="${url}" target="_blank">Abrir WhatsApp novamente</a>
+      <button class="btn btn-outline btn-block" id="baixarTxtBtn2" type="button" style="margin-top:12px">📄 Baixar pedido .txt novamente</button>`;
     const sendBtn = $('sendOrderWhatsapp');
     if (sendBtn) sendBtn.href = url;
+    const baixarBtn = $('baixarTxtBtn2');
+    if (baixarBtn) baixarBtn.addEventListener('click', () => {
+      if (global.CDBOrderTxt && state.pedido) {
+        global.CDBOrderTxt.baixarTxtPedido(state.pedido, {
+          paymentMethod: state.paymentMethod,
+          status: 'AGUARDANDO CONFIRMAÇÃO DE PAGAMENTO',
+        });
+      }
+    });
   }
 
   /* ---------- Init ---------- */
