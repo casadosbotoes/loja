@@ -16,6 +16,12 @@ E-commerce de botões e aviamentos, 100% estático, hospedado no GitHub Pages.
 - **Cálculo de frete** via API oficial dos Correios (PAC + SEDEX)
 - **Frete grátis** acima de R$ 199 (configurável)
 - **WhatsApp**: integração de atendimento e confirmação de pedidos
+- **📄 .txt do pedido gerado automaticamente** — quando o cliente
+  confirma o pedido, um arquivo `pedido-CDB00000000.txt` é baixado
+  com TODOS os dados organizados (cliente, endereço, itens, frete,
+  pagamento, total). O cliente é incentivado a anexar no WhatsApp.
+  O lojista também recebe os mesmos dados em texto no corpo da
+  mensagem WhatsApp (sempre, mesmo sem anexar o arquivo).
 - **Design responsivo** (mobile, tablet, desktop)
 - **Identidade visual** vinho + creme + tons de madeira
 
