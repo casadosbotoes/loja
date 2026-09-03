@@ -126,16 +126,25 @@
       cont.innerHTML = '<p class="shipping-empty">Nenhum serviço disponível para o CEP informado. Tente novamente.</p>';
       return;
     }
-    cont.innerHTML = resultados.map((r, i) => `
+    const regiao = resultados[0]?.regiao ? `<p class="shipping-regiao">📍 Região de destino: <strong>${escapeHTML(resultados[0].regiao)}</strong></p>` : '';
+    const isTabela = resultados.some(r => r.tabelaInterna);
+    const aviso = isTabela
+      ? '<p class="shipping-aviso">Frete estimado por região. O valor final é confirmado no WhatsApp após o pagamento.</p>'
+      : '';
+
+    cont.innerHTML = regiao + aviso + resultados.map((r, i) => {
+      const prazoTxt = r.prazo ? ' · ' + r.prazo + ' dias úteis' : '';
+      const desc = r.descricao ? escapeHTML(r.descricao) : '';
+      return `
       <label class="shipping-option ${i === 0 ? 'selected' : ''}" data-codigo="${r.codigo}">
         <input type="radio" name="frete" value="${r.codigo}" ${i === 0 ? 'checked' : ''} hidden>
         <div class="shipping-option-info">
-          <span class="shipping-option-name">${escapeHTML(r.nome)}</span>
-          <span class="shipping-option-desc">${escapeHTML(r.descricao || '')}${r.prazo ? ' · ' + r.prazo + ' dias úteis' : ''}</span>
+          <span class="shipping-option-name">${escapeHTML(r.nome)}${prazoTxt}</span>
+          ${desc ? `<span class="shipping-option-desc">${desc}</span>` : ''}
         </div>
         <span class="shipping-option-price">${r.valor === 0 ? 'Grátis' : formatBRL(r.valor)}</span>
-      </label>
-    `).join('');
+      </label>`;
+    }).join('');
 
     // Handlers
     cont.querySelectorAll('.shipping-option').forEach(el => {

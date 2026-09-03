@@ -61,20 +61,43 @@ window.CDB_CONFIG = {
 
   /* ---------- Correios (cálculo de frete) ---------- */
   correios: {
-    // [PREENCHER] Credenciais da API dos Correios
-    // Cadastre-se em https://www.correios.com.br/precos-e-prazos-de-encomendas-e-servicos-online
-    // Pegue: contrato (10 dígitos), cartão de postagem (10 dígitos), senha
+    // [OPCIONAL] Credenciais da API oficial dos Correios.
+    // Se preenchidas + workerUrl, usa API oficial (precisa fazer deploy
+    // do worker.js no Cloudflare). Cadastre em:
+    // https://www.correios.com.br/precos-e-prazos-de-encomendas-e-servicos-online
     contrato: "",
     cartaoPostagem: "",
-    // Se preenchido, usa o worker.js para fazer a chamada com CORS resolvido.
-    workerUrl: "", // se vazio, tenta direto + fallback CORS público
-    // Serviços de entrega disponíveis (PAC + SEDEX)
+    workerUrl: "", // ex: "https://casadosbotoes-worker.seu-usuario.workers.dev"
+
+    // Se contrato/worker não preenchidos, usa a TABELA INTERNA abaixo.
+    // Sempre funciona, sem precisar de credenciais dos Correios.
+    // Valores base 2025 (por região do Brasil - primeiro dígito do CEP).
+    // EDITE os valores conforme sua realidade. Formato:
+    //   "<1º dígito do CEP>": { regiao, pac, sedex, prazoPac, prazoSedex }
+    // Os valores são por pacote de até 0,3kg (1 pacote com 6 botões).
+    // Pedidos maiores têm acréscimo de 30% por pacote adicional.
+    // Pedidos para a MESMA REGIÃO da origem têm 15% de desconto.
+    tabelaFrete: {
+      "0": { regiao: "Grande São Paulo",                  pac: 12.90, sedex: 19.90, prazoPac: 4,  prazoSedex: 1 },
+      "1": { regiao: "Interior SP + RJ + MG + ES",         pac: 16.90, sedex: 26.90, prazoPac: 6,  prazoSedex: 2 },
+      "2": { regiao: "RJ + ES",                            pac: 17.90, sedex: 27.90, prazoPac: 6,  prazoSedex: 2 },
+      "3": { regiao: "Minas Gerais + Bahia",               pac: 19.90, sedex: 32.90, prazoPac: 7,  prazoSedex: 3 },
+      "4": { regiao: "BA + SE + AL + PE",                  pac: 22.90, sedex: 38.90, prazoPac: 8,  prazoSedex: 4 },
+      "5": { regiao: "PE + PB + RN + CE",                  pac: 24.90, sedex: 42.90, prazoPac: 9,  prazoSedex: 4 },
+      "6": { regiao: "Norte (PA, AM, AC, RO, RR, AP)",     pac: 34.90, sedex: 62.90, prazoPac: 12, prazoSedex: 6 },
+      "7": { regiao: "Centro-Oeste (DF, GO, TO, MT, MS)", pac: 26.90, sedex: 47.90, prazoPac: 10, prazoSedex: 4 },
+      "8": { regiao: "Sul (PR, SC)",                       pac: 19.90, sedex: 32.90, prazoPac: 6,  prazoSedex: 3 },
+      "9": { regiao: "Rio Grande do Sul",                  pac: 22.90, sedex: 38.90, prazoPac: 7,  prazoSedex: 3 },
+    },
+
+    // Serviços de entrega disponíveis (mostrados no checkout)
     servicos: [
-      { codigo: "03298", nome: "PAC", descricao: "Econômico, 5-9 dias úteis" },
-      { codigo: "03220", nome: "SEDEX", descricao: "Rápido, 1-3 dias úteis" },
+      { codigo: "03298", nome: "PAC",  descricao: "Econômico, 4-12 dias úteis" },
+      { codigo: "03220", nome: "SEDEX", descricao: "Rápido, 1-6 dias úteis" },
     ],
+
     // Dimensões padrão do pacote (1 pacote pequeno com botões)
-    // Ajuste conforme o pedido: o JS multiplica peso por quantidade
+    // O JS multiplica peso/altura conforme quantidade de produtos no carrinho
     pacote: {
       pesoBaseKg: 0.05, // peso de 1 pacote com 6 botões
       comprimentoCm: 16,

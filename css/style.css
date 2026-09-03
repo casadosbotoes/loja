@@ -620,6 +620,24 @@ ul { list-style: none; }
 .form-group input:disabled { background: #f5ede0; color: var(--c-texto-claro); }
 
 .shipping-options { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.shipping-regiao {
+  background: var(--c-creme);
+  border-left: 3px solid var(--c-madeira);
+  padding: 10px 14px;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: 0.88rem;
+  color: var(--c-texto);
+  margin-bottom: 8px;
+}
+.shipping-aviso {
+  background: rgba(107, 31, 42, 0.06);
+  border-left: 3px solid var(--c-vinho);
+  padding: 8px 12px;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: 0.78rem;
+  color: var(--c-texto-claro);
+  margin-bottom: 8px;
+}
 .shipping-empty { color: var(--c-texto-claro); font-size: 0.88rem; padding: 16px; background: var(--c-creme); border-radius: var(--r-sm); text-align: center; }
 .shipping-option {
   display: flex; justify-content: space-between; align-items: center;
