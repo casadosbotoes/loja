@@ -140,13 +140,18 @@
       if (p.destaque) badges.push('<span class="product-badge badge-destaque">Destaque</span>');
       if (p.promocao) badges.push('<span class="product-badge badge-promo">Promoção</span>');
       const precoAntigo = p.precoAntigo ? `<span class="preco-antigo">${formatBRL(p.precoAntigo)}</span>` : '';
+      // Sistema de galeria: usa images[] se existir, senão fallback image
+      const imgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+      const imgPrincipal = imgs[0] || '';
+      const hasGaleria = imgs.length > 1;
+      const galeriaBadges = hasGaleria ? `<span class="product-badge badge-galeria">📷 ${imgs.length} fotos</span>` : '';
 
       return `
         <article class="product-card" data-id="${p.id}">
           <div class="product-img" data-action="view">
-            <div class="product-badges">${badges.join('')}</div>
-            <img src="images/products/${p.image}.webp" alt="${escapeHTML(p.nome)}" loading="lazy"
-                 onerror="this.src='images/products/${p.image}.jpg'">
+            <div class="product-badges">${badges.join('')}${galeriaBadges}</div>
+            <img src="images/products/${imgPrincipal}" alt="${escapeHTML(p.nome)}" loading="lazy"
+                 onerror="this.onerror=null;this.src='images/products/${imgPrincipal.replace(/\.webp$/, '.jpg')}'">
           </div>
           <div class="product-info">
             <span class="product-cat">${escapeHTML(getCategoriaNome(p.categoria))}</span>
@@ -179,7 +184,7 @@
     });
   }
 
-  /* ---------- Product modal ---------- */
+  /* ---------- Product modal (com galeria dinâmica) ---------- */
   function openProductModal(id) {
     const p = (global.CDB_PRODUCTS || []).find(p => p.id === id);
     if (!p) return;
@@ -192,11 +197,39 @@
     const detalhes = (p.detalhes || []).map(d => `<li>${escapeHTML(d)}</li>`).join('');
     const precoAntigo = p.precoAntigo ? `<span class="preco-antigo">${formatBRL(p.precoAntigo)}</span>` : '';
 
+    // Sistema de galeria: lista de imagens (1 ou mais)
+    const imgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+    const hasGaleria = imgs.length > 1;
+    const imgPrincipal = imgs[0] || '';
+
+    // Monta a galeria: imagem principal + miniaturas (se >1 foto)
+    const galeriaPrincipal = `
+      <div class="galeria-principal">
+        <img id="galeriaImgPrincipal" src="images/products/${imgPrincipal}" alt="${escapeHTML(p.nome)}"
+             onerror="this.onerror=null;this.src='images/products/${imgPrincipal.replace(/\.webp$/, '.jpg')}'">
+        ${hasGaleria ? `<div class="galeria-counter"><span id="galeriaIdx">1</span> / ${imgs.length}</div>` : ''}
+        ${hasGaleria && imgs.length > 1 ? `
+          <button class="galeria-nav galeria-prev" type="button" aria-label="Foto anterior">‹</button>
+          <button class="galeria-nav galeria-next" type="button" aria-label="Próxima foto">›</button>
+        ` : ''}
+      </div>
+    `;
+    const galeriaThumbs = hasGaleria ? `
+      <div class="galeria-thumbs">
+        ${imgs.map((img, i) => `
+          <button class="galeria-thumb ${i === 0 ? 'active' : ''}" data-img="${img}" data-idx="${i}" type="button">
+            <img src="images/products/${img}" alt="Miniatura ${i+1}" loading="lazy"
+                 onerror="this.onerror=null;this.src='images/products/${img.replace(/\.webp$/, '.jpg')}'">
+          </button>
+        `).join('')}
+      </div>
+    ` : '';
+
     body.innerHTML = `
       <div class="product-modal-grid">
         <div class="product-modal-img">
-          <img src="images/products/${p.image}.webp" alt="${escapeHTML(p.nome)}"
-               onerror="this.src='images/products/${p.image}.jpg'">
+          ${galeriaPrincipal}
+          ${galeriaThumbs}
         </div>
         <div class="product-modal-info">
           <span class="product-cat">${escapeHTML(getCategoriaNome(p.categoria))}</span>
@@ -218,6 +251,62 @@
         </div>
       </div>`;
 
+    // ----- Galeria dinâmica: troca de imagem -----
+    if (hasGaleria) {
+      const imgEl = body.querySelector('#galeriaImgPrincipal');
+      const idxEl = body.querySelector('#galeriaIdx');
+      const thumbs = body.querySelectorAll('.galeria-thumb');
+      const prevBtn = body.querySelector('.galeria-prev');
+      const nextBtn = body.querySelector('.galeria-next');
+      let currentIdx = 0;
+
+      function changeImage(newIdx) {
+        if (newIdx < 0) newIdx = imgs.length - 1;
+        if (newIdx >= imgs.length) newIdx = 0;
+        currentIdx = newIdx;
+        const newImg = imgs[newIdx];
+        imgEl.style.opacity = '0';
+        setTimeout(() => {
+          imgEl.src = 'images/products/' + newImg;
+          imgEl.onerror = function() {
+            this.onerror = null;
+            this.src = 'images/products/' + newImg.replace(/\.webp$/, '.jpg');
+          };
+          imgEl.style.opacity = '1';
+        }, 150);
+        if (idxEl) idxEl.textContent = newIdx + 1;
+        thumbs.forEach((t, i) => t.classList.toggle('active', i === newIdx));
+      }
+
+      thumbs.forEach((t, i) => t.addEventListener('click', () => changeImage(i)));
+      if (prevBtn) prevBtn.addEventListener('click', () => changeImage(currentIdx - 1));
+      if (nextBtn) nextBtn.addEventListener('click', () => changeImage(currentIdx + 1));
+
+      // Navegação por teclado
+      document.addEventListener('keydown', function galeriaKey(e) {
+        if (!modal.classList.contains('open')) {
+          document.removeEventListener('keydown', galeriaKey);
+          return;
+        }
+        if (e.key === 'ArrowLeft') changeImage(currentIdx - 1);
+        else if (e.key === 'ArrowRight') changeImage(currentIdx + 1);
+      });
+
+      // Swipe no mobile
+      let touchStartX = 0;
+      imgEl.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      imgEl.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 50) {
+          if (dx > 0) changeImage(currentIdx - 1);
+          else changeImage(currentIdx + 1);
+        }
+      }, { passive: true });
+    }
+
+    // Ações do modal
     body.querySelector('[data-action="add"]')?.addEventListener('click', () => {
       global.CDBCart.add(id);
     });

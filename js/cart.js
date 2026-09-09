@@ -65,7 +65,8 @@
         nome: p.nome,
         preco: p.preco,
         unidade: p.unidade,
-        image: p.image,
+        image: p.image,        // compatibilidade
+        images: p.images || (p.image ? [p.image] : []),
         qty: qty,
       });
     }
@@ -128,11 +129,14 @@
     const footer = document.getElementById('cartFooter');
     if (footer) footer.style.display = '';
 
-    body.innerHTML = cart.map(item => `
+    body.innerHTML = cart.map(item => {
+      // Suporta products com images[] (galeria) e legados com image
+      const img = (item.images && item.images[0]) || item.image || '';
+      return `
       <div class="cart-item" data-id="${item.id}">
         <div class="cart-item-img">
-          <img src="images/products/${item.image}.webp" alt="${escapeHTML(item.nome)}" loading="lazy"
-               onerror="this.src='images/products/${item.image}.jpg'">
+          <img src="images/products/${img}" alt="${escapeHTML(item.nome)}" loading="lazy"
+               onerror="this.onerror=null;this.src='images/products/${img.replace(/\.webp$/, '.jpg')}';">
         </div>
         <div class="cart-item-info">
           <span class="cart-item-name">${escapeHTML(item.nome)}</span>
@@ -146,8 +150,8 @@
           <button class="cart-item-remove" data-action="remove">Remover</button>
         </div>
         <div></div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
 
     // Adiciona handlers de quantidade/remover
     body.querySelectorAll('.cart-item').forEach(el => {
