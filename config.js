@@ -149,6 +149,17 @@ window.CDB_CONFIG = {
     assunto: "🧵 Novo pedido - Casa dos Botões",
   },
 
+  /* ---------- Página de Pedidos (URL secreta + senha) ---------- */
+  // A página de pedidos tem URL difícil de adivinhar + senha de acesso.
+  // Para mudar a senha, edite abaixo e faça commit.
+  pedidos: {
+    // Senha de acesso à página de pedidos
+    // URL atual: pedidos-cdb-216f4301998b132a.html
+    senha: "casabotoes2024",
+    // Dica mostrada na tela de login (opcional)
+    dicaSenha: "Padrão da loja (mude em config.js)",
+  },
+
   /* ---------- Frete grátis ---------- */
   freteGratis: {
     ativo: true,

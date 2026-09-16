@@ -193,6 +193,81 @@
       padding-top: 12px;
       border-top: 1px solid var(--borda-clara);
     }
+
+    /* === TELA DE LOGIN === */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #6b1f2a 0%, #4a1620 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+    .login-overlay.hidden { display: none; }
+    .login-box {
+      background: #fff;
+      padding: 40px 32px;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+    }
+    .login-box h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      color: var(--vinho);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .login-box .login-sub {
+      font-size: 0.88rem;
+      color: #888;
+      margin-bottom: 24px;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--borda);
+      border-radius: 6px;
+      font-size: 1rem;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus {
+      outline: none;
+      border-color: var(--vinho);
+    }
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: var(--vinho);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .login-box button:hover { background: var(--vinho-escuro); }
+    .login-error {
+      color: var(--erro);
+      font-size: 0.85rem;
+      margin-top: 12px;
+      min-height: 1.2em;
+    }
+    .login-dica {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
     @media (max-width: 700px) {
       .pedido-grid { grid-template-columns: 1fr; }
       .header { padding: 16px 20px; }
@@ -211,7 +286,21 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- TELA DE LOGIN -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <h2>🔒 Acesso Restrito</h2>
+      <p class="login-sub">Página de pedidos - Casa dos Botões</p>
+      <form id="loginForm" autocomplete="off">
+        <input type="password" id="senhaInput" placeholder="Digite a senha" autofocus>
+        <button type="submit">Entrar →</button>
+        <div class="login-error" id="loginError"></div>
+      </form>
+      <div class="login-dica" id="loginDica"></div>
+    </div>
+  </div>
+
+  <div class="container" id="appContainer" style="display:none;">
 
     <div class="header">
       <h1>📋 Pedidos — Casa dos Botões</h1>
@@ -237,14 +326,21 @@
       <button class="btn btn-primary" id="btnBaixarTudo">📄 Baixar tudo (.txt)</button>
       <button class="btn btn-outline" id="btnImprimir">🖨️ Imprimir</button>
       <button class="btn btn-danger" id="btnLimpar">🗑️ Limpar tudo</button>
+      <button class="btn btn-outline" id="btnSair" style="margin-left: auto;">🚪 Sair</button>
       <input type="file" id="fileInput" class="file-input" accept=".txt" multiple>
     </div>
 
     <div class="aviso">
-      <strong>ℹ️ Como funciona:</strong> Esta página salva pedidos no <strong>navegador</strong> (localStorage).
-      Pedidos feitos neste navegador aparecem automaticamente. Para pedidos recebidos por e-mail/WhatsApp,
-      clique em <strong>"Importar .txt de pedido"</strong> e selecione o arquivo .txt do pedido.
-      Para acessar de outro aparelho, use o botão <strong>"Baixar tudo (.txt)"</strong> e importe no novo aparelho.
+      <strong>⚠️ IMPORTANTE - Leia antes de usar:</strong>
+      <br><br>
+      Esta página salva os pedidos <strong>no navegador</strong> (localStorage). Isso significa:
+      <ul style="margin: 10px 0 10px 20px; font-size: 0.88rem;">
+        <li>✅ Pedidos feitos <strong>neste navegador</strong> aparecem automaticamente</li>
+        <li>❌ Pedidos feitos por clientes em <strong>outros aparelhos</strong> NÃO aparecem sozinhos</li>
+        <li>📥 Para ver pedidos de clientes: clique em <strong>"Importar .txt"</strong> e selecione o arquivo .txt que você recebeu por e-mail (casadebotao1@gmail.com)</li>
+        <li>🔄 Para mudar de aparelho: use <strong>"Baixar tudo (.txt)"</strong> aqui, depois <strong>"Importar .txt"</strong> no outro aparelho</li>
+      </ul>
+      <strong>💡 Dica:</strong> Sempre que receber um pedido novo por e-mail, baixe o .txt anexo e importe aqui para manter seu histórico consolidado.
     </div>
 
     <div id="pedidosLista"></div>
@@ -467,13 +563,79 @@
         atualizarTudo();
       });
 
+      // Botão Sair - faz logout
+      $('btnSair').addEventListener('click', () => {
+        sessionStorage.removeItem(SESSION_KEY);
+        mostrarLogin();
+        document.getElementById('senhaInput').value = '';
+        document.getElementById('senhaInput').focus();
+      });
+
       function atualizarTudo() {
         atualizarStats();
         renderPedidos();
       }
 
-      // Inicializa
-      atualizarTudo();
+      // === LÓGICA DE LOGIN ===
+      const SENHA_CORRETA = window.CDB_CONFIG?.pedidos?.senha || 'casabotoes2024';
+      const SESSION_KEY = 'cdb_pedidos_auth';
+
+      function mostrarApp() {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('appContainer').style.display = '';
+        atualizarTudo();
+      }
+
+      function mostrarLogin() {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('appContainer').style.display = 'none';
+        // Mostra dica se existir
+        const dica = window.CDB_CONFIG?.pedidos?.dicaSenha;
+        if (dica) {
+          document.getElementById('loginDica').textContent = '💡 ' + dica;
+        }
+      }
+
+      // Verifica se já está autenticado nesta sessão
+      if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+        mostrarApp();
+      } else {
+        mostrarLogin();
+      }
+
+      // Handler do formulário de login
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const senha = document.getElementById('senhaInput').value;
+        const error = document.getElementById('loginError');
+        if (senha === SENHA_CORRETA) {
+          // Salva autenticação na sessão (some ao fechar aba)
+          sessionStorage.setItem(SESSION_KEY, 'ok');
+          error.textContent = '';
+          mostrarApp();
+        } else {
+          error.textContent = '❌ Senha incorreta. Tente novamente.';
+          document.getElementById('senhaInput').value = '';
+          document.getElementById('senhaInput').focus();
+          // Animação de shake
+          const box = document.querySelector('.login-box');
+          box.style.animation = 'none';
+          setTimeout(() => {
+            box.style.animation = 'shake 0.4s';
+          }, 10);
+        }
+      });
+
+      // Adiciona animação shake
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-8px); }
+          75% { transform: translateX(8px); }
+        }
+      `;
+      document.head.appendChild(style);
     })();
   </script>
 </body>

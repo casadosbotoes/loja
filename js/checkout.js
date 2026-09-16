@@ -334,8 +334,10 @@
               ? global.CDBOrderTxt.gerarTxtPedido(state.pedido, { paymentMethod: state.paymentMethod })
               : '',
           });
-          global.CDBOrders.adicionar(pedidoComTxt);
-          console.log('[checkout] Pedido salvo no histórico');
+          const salvou = global.CDBOrders.adicionar(pedidoComTxt);
+          if (salvou) {
+            console.log('[checkout] ✓ Pedido salvo no histórico:', state.pedido.numero);
+          }
         }
       } catch (e) {
         console.warn('[checkout] erro ao salvar no histórico:', e);
