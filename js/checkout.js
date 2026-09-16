@@ -194,14 +194,14 @@
     if (!cont) return;
     const metodos = global.CDB_CONFIG?.checkout?.metodos || ['pix', 'cartao', 'whatsapp'];
     const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
-    const mpDisponivel = mpCfg.workerUrl && mpCfg.workerUrl.length > 0;
+    const mpDisponivel = (mpCfg.accessToken && mpCfg.accessToken.length > 20) || (mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
 
     const cards = [];
     for (const m of metodos) {
       if (m === 'pix') {
         cards.push({ id: 'pix', nome: 'Pix', desc: 'QR Code na hora, 100% seguro' });
       } else if (m === 'cartao' && mpDisponivel) {
-        cards.push({ id: 'cartao', nome: 'Cartão', desc: 'Crédito até 12x via Mercado Pago' });
+        cards.push({ id: 'cartao', nome: 'Cartão', desc: 'Crédito/Débito via Mercado Pago — até 12x' });
       } else if (m === 'cartao' && !mpDisponivel) {
         // sem worker MP, cartão fica oculto
         continue;
@@ -436,66 +436,46 @@
     }
   }
 
-  /* ---------- Mercado Pago via Worker ---------- */
+  /* ---------- Mercado Pago ---------- */
   async function criarPreferenciaMP() {
-    const mp = global.CDB_CONFIG.mercadoPago || {};
-    const workerUrl = mp.workerUrl;
-    if (!workerUrl) throw new Error('Mercado Pago não configurado. Configure o Cloudflare Worker em worker.js.');
+    if (!global.CDBMercadoPago) {
+      throw new Error('Módulo Mercado Pago não carregou.');
+    }
 
-    const body = {
-      acao: state.paymentMethod === 'cartao' ? 'mp_cartao' : 'mp_pix',
-      publicKey: mp.publicKey,
-      items: state.pedido.items.map(i => ({
-        id: i.id,
-        title: i.nome + ' (' + i.unidade + ')',
-        quantity: i.qty,
-        unit_price: i.preco,
-        currency_id: 'BRL',
-      })),
-      frete: state.pedido.frete,
-      total: state.pedido.total,
-      numero: state.pedido.numero,
-      cliente: state.pedido.cliente,
-      back_url: window.location.origin + window.location.pathname + '?pedido=' + state.pedido.numero,
-    };
-
-    const resp = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    // Cria a preferência (direto do front ou via Worker)
+    const result = await global.CDBMercadoPago.criarPreferencia(state.pedido, {
+      paymentMethod: state.paymentMethod,
     });
-    if (!resp.ok) throw new Error('Worker MP HTTP ' + resp.status);
-    const data = await resp.json();
-    if (!data.success) throw new Error(data.error || 'Erro ao criar preferência MP');
 
-    if (state.paymentMethod === 'cartao' && data.init_point) {
-      // Redireciona para o checkout do MP (cartão)
-      window.location.href = data.init_point;
+    if (state.paymentMethod === 'cartao' && result.init_point) {
+      // Redireciona para o Checkout Pro do MP
+      console.log('[checkout] Redirecionando para MP:', result.init_point);
+      // Mostra feedback antes de redirecionar
+      const confirmBtn = $('confirmOrder');
+      if (confirmBtn) {
+        confirmBtn.textContent = 'Redirecionando...';
+        confirmBtn.disabled = true;
+      }
+      // Salva o pedido no histórico antes de sair
+      try {
+        if (global.CDBOrders && state.pedido) {
+          const pedidoComTxt = Object.assign({}, state.pedido, {
+            rawTxt: global.CDBOrderTxt
+              ? global.CDBOrderTxt.gerarTxtPedido(state.pedido, { paymentMethod: state.paymentMethod })
+              : '',
+            mpPreferenceId: result.preference_id,
+          });
+          global.CDBOrders.adicionar(pedidoComTxt);
+        }
+      } catch (e) { console.warn('[checkout] erro ao salvar:', e); }
+
+      // Pequeno delay para o usuário ver a mensagem
+      setTimeout(() => {
+        window.location.href = result.init_point;
+      }, 800);
       return;
     }
-    if (state.paymentMethod === 'pix-mp' && data.qr_code) {
-      // Exibe o QR Code Pix do MP
-      state.pixData = { brcode: data.qr_code, qrUrl: null, valor: state.pedido.total };
-      $('confirmMsg').innerHTML = `Pedido <strong>${escapeHTML(state.pedido.numero)}</strong> no valor de <strong>${formatBRL(state.pedido.total)}</strong> gerado via Mercado Pago. Escaneie o QR Code abaixo:`;
-      $('pixQrArea').innerHTML = `
-        <div class="pix-qr">
-          ${data.qr_code_base64 ? `<img src="data:image/png;base64,${data.qr_code_base64}" alt="QR Code Pix MP" width="240" height="240">` : ''}
-          <span class="pix-code">${escapeHTML(data.qr_code)}</span>
-          <button class="pix-copy-btn" id="copyPixBtn" type="button">Copiar código Pix</button>
-        </div>`;
-      const copyBtn = $('copyPixBtn');
-      if (copyBtn) copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(data.qr_code).then(() => {
-          copyBtn.textContent = 'Código copiado!';
-          setTimeout(() => copyBtn.textContent = 'Copiar código Pix', 2000);
-        });
-      });
-      const sendBtn = $('sendOrderWhatsapp');
-      if (sendBtn) sendBtn.href = montarLinkWhatsapp();
-      goToStep('confirm');
-      return;
-    }
-    throw new Error('Resposta do MP inválida');
+    throw new Error('Resposta do MP inválida: init_point ausente');
   }
 
   /* ---------- WhatsApp ---------- */

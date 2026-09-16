@@ -43,20 +43,33 @@ window.CDB_CONFIG = {
     identificadorPrefix: "CDB",
   },
 
-  /* ---------- Mercado Pago (opcional - para cartão e Pix via MP) ---------- */
-  // O site funciona perfeitamente só com Pix direto (acima).
-  // Se quiser aceitar cartão de crédito ou usar o Pix do Mercado Pago,
-  // preencha abaixo e faça o deploy do Cloudflare Worker em worker.js
+  /* ---------- Mercado Pago (cartão de crédito/débito) ---------- */
+  // Integração com Checkout Pro do Mercado Pago.
+  // Quando o cliente escolhe "Cartão" no checkout, o site cria uma
+  // preferência via API e redireciona para a página do MP pagar.
+  //
+  // ⚠️ AVISO DE SEGURANÇA:
+  // O Access Token abaixo está visível no JavaScript público (GitHub Pages).
+  // Risco limitado: alguém pode criar preferências em seu nome, mas o
+  // dinheiro SEMPRE entra na sua conta. Para 100% de segurança, faça
+  // deploy do worker.js no Cloudflare (grátis) e mova o Access Token
+  // para lá. Veja instruções no README.
   mercadoPago: {
-    // [OPCIONAL] Public Key do MP (front-end). Pegue em:
-    // https://www.mercadopago.com.br/developers/panel/app
-    publicKey: "",
-    // [OPCIONAL] Access Token do MP (NÃO colar aqui no front se for site público!)
-    // Use o worker.js em produção. Este campo serve apenas para teste local.
-    accessToken: "",
-    // URL do Cloudflare Worker que faz proxy seguro para a API do MP
-    // Se vazio, os botões "Cartão" e "Pix MP" ficam ocultos.
-    workerUrl: "", // ex: "https://casadosbotoes-worker.seu-usuario.workers.dev"
+    publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",
+    accessToken: "APP_USR-453076602431772-091619-6f1e289a42cdee671b1cc1b4f87728e2-3696429282",
+    // URL do Worker (Cloudflare) para deixar seguro. Se vazio, usa
+    // Access Token direto no front (menos seguro mas funciona).
+    workerUrl: "",
+    // URL de retorno após o cliente pagar no MP
+    backUrl: "https://casadosbotoes.github.io/loja/",
+    // Métodos de pagamento aceitos no Checkout Pro
+    // 'credit_card' = cartão de crédito
+    // 'debit_card'  = cartão de débito
+    // 'pix'         = Pix via MP (opcional - você já tem Pix direto sem taxa)
+    // 'ticket'      = boleto bancário
+    metodosAceitos: ["credit_card", "debit_card"],
+    // Parcelamento: 1 = à vista, 12 = até 12x (configurado no painel do MP)
+    maxParcelas: 12,
   },
 
   /* ---------- Correios (cálculo de frete) ---------- */
