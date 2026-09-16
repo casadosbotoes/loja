@@ -1120,6 +1120,8 @@ ul { list-style: none; }
 .form-group-cep { position: relative; }
 .form-group-cep input { padding-right: 110px; }
 .form-group-cep button { position: absolute; right: 4px; top: 28px; }
+.form-group-numero { max-width: 130px; flex: 0 0 130px; }
+.form-group-endereco { flex: 1; }
 .form-group label { font-size: 0.85rem; color: var(--c-texto-claro); font-weight: 500; }
 .form-group input {
   padding: 10px 12px;

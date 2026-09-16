@@ -85,7 +85,11 @@
           <h2 style="color: #6b1f2a; margin: 0 0 12px; font-size: 16px;">📍 Entrega</h2>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <tr><td style="padding: 4px 0; width: 100px; color: #888;">CEP:</td><td>${escapeHtml(pedido.cliente.cep || '-')}</td></tr>
-            <tr><td style="padding: 4px 0; color: #888;">Endereço:</td><td>${escapeHtml(pedido.cliente.endereco || '-')}</td></tr>
+            <tr><td style="padding: 4px 0; color: #888;">Rua:</td><td>${escapeHtml(pedido.cliente.endereco || '-')}</td></tr>
+            <tr><td style="padding: 4px 0; color: #888;">Número:</td><td><strong style="color: #c62828;">${escapeHtml(pedido.cliente.numero || '⚠ NÃO PREENCHIDO')}</strong></td></tr>
+            ${pedido.cliente.complemento ? `<tr><td style="padding: 4px 0; color: #888;">Complemento:</td><td>${escapeHtml(pedido.cliente.complemento)}</td></tr>` : ''}
+            <tr><td style="padding: 4px 0; color: #888;">Bairro:</td><td>${escapeHtml(pedido.cliente.bairro || '-')}</td></tr>
+            ${pedido.cliente.referencia ? `<tr><td style="padding: 4px 0; color: #888;">Referência:</td><td>${escapeHtml(pedido.cliente.referencia)}</td></tr>` : ''}
             <tr><td style="padding: 4px 0; color: #888;">Cidade:</td><td>${escapeHtml(pedido.cliente.cidade || '-')} / ${escapeHtml(pedido.cliente.uf || '-')}</td></tr>
           </table>
 

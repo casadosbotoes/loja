@@ -96,7 +96,8 @@
     try {
       // 1. Busca endereço
       const end = await global.CDBShipping.buscarEndereco(cep);
-      $('ck-endereco').value = [end.logradouro, end.bairro].filter(Boolean).join(', ');
+      $('ck-endereco').value = end.logradouro || '';
+      $('ck-bairro').value = end.bairro || '';
       $('ck-cidade').value = end.cidade;
       $('ck-uf').value = end.uf;
 
@@ -282,12 +283,21 @@
         telefone: $('ck-telefone').value.trim(),
         cep: $('ck-cep').value.trim(),
         endereco: $('ck-endereco').value.trim(),
+        numero: $('ck-numero').value.trim(),
+        complemento: $('ck-complemento').value.trim(),
+        bairro: $('ck-bairro').value.trim(),
+        referencia: $('ck-referencia').value.trim(),
         cidade: $('ck-cidade').value.trim(),
         uf: $('ck-uf').value.trim(),
       };
 
       if (!cliente.nome || !cliente.telefone) {
         throw new Error('Preencha nome e telefone.');
+      }
+      // Valida número do endereço (a menos que seja retirada no local)
+      const isRetirada = state.shippingOption?.retirada;
+      if (!isRetirada && !cliente.numero) {
+        throw new Error('Por favor, preencha o NÚMERO do endereço para entrega.');
       }
 
       state.pedido = {
@@ -567,6 +577,16 @@
       if (!nome || !tel) {
         alert('Preencha nome e telefone para continuar.');
         return;
+      }
+      // Valida número do endereço (se NÃO for retirada)
+      const isRetirada = state.shippingOption?.retirada;
+      if (!isRetirada) {
+        const numero = $('ck-numero').value.trim();
+        if (!numero) {
+          alert('Por favor, preencha o NÚMERO do endereço para entrega.');
+          $('ck-numero').focus();
+          return;
+        }
       }
       goToStep('payment');
     });

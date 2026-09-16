@@ -331,8 +331,28 @@
               <button class="btn btn-small" id="ck-calcular" type="button">Calcular frete</button>
             </div>
             <div class="form-group">
-              <label for="ck-endereco">Endereço</label>
-              <input type="text" id="ck-endereco" placeholder="Rua, número" autocomplete="street-address" disabled>
+              <label for="ck-bairro">Bairro</label>
+              <input type="text" id="ck-bairro" placeholder="Bairro" autocomplete="address-level3" disabled>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group form-group-endereco">
+              <label for="ck-endereco">Rua / Logradouro *</label>
+              <input type="text" id="ck-endereco" placeholder="Rua, avenida..." autocomplete="street-address" disabled>
+            </div>
+            <div class="form-group form-group-numero">
+              <label for="ck-numero">Número *</label>
+              <input type="text" id="ck-numero" placeholder="123" inputmode="numeric" autocomplete="address-line2">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ck-complemento">Complemento (opcional)</label>
+              <input type="text" id="ck-complemento" placeholder="Apto, casa, bloco..." autocomplete="address-line1">
+            </div>
+            <div class="form-group">
+              <label for="ck-referencia">Ponto de referência (opcional)</label>
+              <input type="text" id="ck-referencia" placeholder="Próximo a...">
             </div>
           </div>
           <div class="form-row">

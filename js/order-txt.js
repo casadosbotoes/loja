@@ -67,7 +67,11 @@
     txt += 'ENDEREÇO DE ENTREGA\n';
     txt += L + '\n';
     txt += `CEP:       ${pedido.cliente.cep || '-'}\n`;
-    txt += `Endereço:  ${pedido.cliente.endereco || '-'}\n`;
+    txt += `Rua:       ${pedido.cliente.endereco || '-'}\n`;
+    txt += `Número:    ${pedido.cliente.numero || '-'} ⚠\n`;
+    if (pedido.cliente.complemento) txt += `Complemento: ${pedido.cliente.complemento}\n`;
+    txt += `Bairro:    ${pedido.cliente.bairro || '-'}\n`;
+    if (pedido.cliente.referencia) txt += `Referência: ${pedido.cliente.referencia}\n`;
     txt += `Cidade:    ${pedido.cliente.cidade || '-'}\n`;
     txt += `UF:        ${pedido.cliente.uf || '-'}\n`;
     txt += '\n';
@@ -207,7 +211,11 @@
 
     msg += `📍 *ENTREGA*\n`;
     msg += `CEP: ${pedido.cliente.cep}\n`;
-    msg += `${pedido.cliente.endereco}\n`;
+    msg += `${pedido.cliente.endereco || ''}, ${pedido.cliente.numero || '⚠ SEM Nº'}`;
+    if (pedido.cliente.complemento) msg += ` - ${pedido.cliente.complemento}`;
+    msg += `\n`;
+    if (pedido.cliente.bairro) msg += `Bairro: ${pedido.cliente.bairro}\n`;
+    if (pedido.cliente.referencia) msg += `Ref: ${pedido.cliente.referencia}\n`;
     msg += `${pedido.cliente.cidade}/${pedido.cliente.uf}\n\n`;
 
     msg += `🛒 *ITENS*\n`;
