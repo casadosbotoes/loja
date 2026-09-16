@@ -130,10 +130,9 @@ window.CDB_CONFIG = {
   // Enquanto o access key estiver vazio, o e-mail fica desativado
   // e apenas o WhatsApp será usado.
   email: {
-    ativo: false, // mude para true após colar o access key abaixo
-    accessKey: "", // COLE AQUI seu access key da Web3Forms (UUID)
-    // Para onde enviar (opcional — se vazio, vai para o e-mail cadastrado na Web3Forms)
-    para: "",
+    ativo: true,
+    accessKey: "639fa091-8dcc-4d78-99bb-58d003f819a3",
+    para: "casadebotao1@gmail.com",
     assunto: "🧵 Novo pedido - Casa dos Botões",
   },
 

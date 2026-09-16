@@ -178,17 +178,25 @@ PAGAMENTO: ${opts.paymentMethod || '-'}
       access_key: cfg.accessKey,
       subject: `${cfg.assunto || 'Novo pedido'} - ${pedido.numero}`,
       from_name: 'Casa dos Botões (site)',
-      to: cfg.para || undefined, // se vazio, vai para o e-mail cadastrado
-      // Reply-To = telefone do cliente como referência
+      // Campos obrigatórios da Web3Forms:
+      // name = nome do "remetente" (usamos o nome do cliente)
+      name: pedido.cliente.nome || 'Cliente do site',
+      // email = e-mail do remetente (precisa ser válido para a Web3Forms aceitar)
+      email: 'no-reply@casadosbotoes.com.br',
+      // O destinatário real é configurado no painel da Web3Forms
+      // (casadebotao1@gmail.com). O campo 'to' abaixo é opcional e
+      // só funciona se a Web3Forms permitir múltiplos destinatários.
+      to: cfg.para || undefined,
       replyto: 'no-reply@casadosbotoes.com.br',
-      // Campos personalizados
+      // Campos personalizados (aparecem no corpo do e-mail)
       pedido_numero: pedido.numero,
       cliente_nome: pedido.cliente.nome,
       cliente_telefone: pedido.cliente.telefone,
       pedido_total: formatBRL(pedido.total),
       pedido_data: formatData(new Date()),
-      // Corpo do e-mail
+      // Corpo do e-mail (HTML formatado)
       html: html,
+      // Resumo em texto puro (fallback)
       text: texto,
     };
 
