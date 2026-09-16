@@ -117,6 +117,26 @@ window.CDB_CONFIG = {
     prazo: "Combinar com a loja",
   },
 
+  /* ---------- E-mail de pedidos (Web3Forms) ---------- */
+  // Receba cada pedido também por e-mail (além do WhatsApp).
+  // Serviço gratuito, sem backend. Os pedidos chegam no seu e-mail.
+  //
+  // COMO CONFIGURAR (3 passos):
+  // 1. Acesse https://web3forms.com no navegador
+  // 2. Digite seu e-mail onde quer receber os pedidos
+  // 3. Você recebe um e-mail da Web3Forms com seu ACCESS KEY (UUID)
+  //    Cole esse access key abaixo (entre as aspas).
+  //
+  // Enquanto o access key estiver vazio, o e-mail fica desativado
+  // e apenas o WhatsApp será usado.
+  email: {
+    ativo: false, // mude para true após colar o access key abaixo
+    accessKey: "", // COLE AQUI seu access key da Web3Forms (UUID)
+    // Para onde enviar (opcional — se vazio, vai para o e-mail cadastrado na Web3Forms)
+    para: "",
+    assunto: "🧵 Novo pedido - Casa dos Botões",
+  },
+
   /* ---------- Frete grátis ---------- */
   freteGratis: {
     ativo: true,

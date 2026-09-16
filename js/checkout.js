@@ -311,6 +311,20 @@
         console.warn('[checkout] erro ao gerar .txt:', e);
       }
 
+      // Envia o pedido por e-mail para o lojista (Web3Forms)
+      // Não bloqueia o fluxo se falhar — o WhatsApp ainda funciona.
+      if (global.CDBEmail) {
+        global.CDBEmail.enviarPedido(state.pedido, {
+          paymentMethod: state.paymentMethod,
+        }).then(result => {
+          if (result.success) {
+            console.log('[checkout] E-mail enviado ao lojista');
+          } else if (result.reason !== 'desativado') {
+            console.warn('[checkout] Falha no e-mail:', result.error);
+          }
+        }).catch(err => console.warn('[checkout] Erro e-mail:', err));
+      }
+
       // Caminho por método de pagamento
       if (state.paymentMethod === 'pix') {
         // Gera QR Code Pix localmente (sem MP)
