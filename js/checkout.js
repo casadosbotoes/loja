@@ -126,20 +126,23 @@
       cont.innerHTML = '<p class="shipping-empty">Nenhum serviço disponível para o CEP informado. Tente novamente.</p>';
       return;
     }
-    const regiao = resultados[0]?.regiao ? `<p class="shipping-regiao">📍 Região de destino: <strong>${escapeHTML(resultados[0].regiao)}</strong></p>` : '';
-    const isTabela = resultados.some(r => r.tabelaInterna);
-    const aviso = isTabela
+    // Se a primeira opção for retirada, mostra destaque
+    const temRetirada = resultados.some(r => r.retirada);
+    const regiaoTxt = resultados.find(r => !r.retirada)?.regiao;
+    const regiao = regiaoTxt ? `<p class="shipping-regiao">📍 Região de destino: <strong>${escapeHTML(regiaoTxt)}</strong></p>` : '';
+    const aviso = !temRetirada
       ? '<p class="shipping-aviso">Frete estimado por região. O valor final é confirmado no WhatsApp após o pagamento.</p>'
-      : '';
+      : '<p class="shipping-aviso shipping-aviso-retirada">🏠 Tem opção de <strong>retirar no local em Ribeirão Preto</strong> (grátis) ou receber em casa via Correios.</p>';
 
     cont.innerHTML = regiao + aviso + resultados.map((r, i) => {
-      const prazoTxt = r.prazo ? ' · ' + r.prazo + ' dias úteis' : '';
+      const prazoTxt = r.prazo ? ' · ' + r.prazo + ' dias úteis' : (r.retirada ? ' · combinar' : '');
       const desc = r.descricao ? escapeHTML(r.descricao) : '';
+      const icon = r.retirada ? '🏠 ' : '';
       return `
-      <label class="shipping-option ${i === 0 ? 'selected' : ''}" data-codigo="${r.codigo}">
+      <label class="shipping-option ${i === 0 ? 'selected' : ''} ${r.retirada ? 'shipping-option-retirada' : ''}" data-codigo="${r.codigo}">
         <input type="radio" name="frete" value="${r.codigo}" ${i === 0 ? 'checked' : ''} hidden>
         <div class="shipping-option-info">
-          <span class="shipping-option-name">${escapeHTML(r.nome)}${prazoTxt}</span>
+          <span class="shipping-option-name">${icon}${escapeHTML(r.nome)}${prazoTxt}</span>
           ${desc ? `<span class="shipping-option-desc">${desc}</span>` : ''}
         </div>
         <span class="shipping-option-price">${r.valor === 0 ? 'Grátis' : formatBRL(r.valor)}</span>

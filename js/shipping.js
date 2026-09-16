@@ -91,14 +91,37 @@
     // --- Estratégia 1: Worker configurado (API oficial Correios) ---
     if (corr.workerUrl && corr.contrato && corr.cartaoPostagem) {
       try {
-        return await calcularViaWorker(cepDestino, pacote, servicos, corr.workerUrl);
+        const resultadosCorreios = await calcularViaWorker(cepDestino, pacote, servicos, corr.workerUrl);
+        // Adiciona opção de retirada no local
+        const resultados = adicionarRetirada(resultadosCorreios);
+        return resultados;
       } catch (e) {
         console.warn('[shipping] Worker falhou:', e.message, '— usando tabela interna');
       }
     }
 
     // --- Estratégia 2: Tabela interna por região (sempre funciona) ---
-    return calcularPorTabela(cepDestino, pacote, servicos, corr);
+    const resultadosTabela = calcularPorTabela(cepDestino, pacote, servicos, corr);
+    // Adiciona opção de retirada no local
+    return adicionarRetirada(resultadosTabela);
+  }
+
+  /* ---------- Adiciona opção de retirada no local ---------- */
+  function adicionarRetirada(resultados) {
+    const cfg = global.CDB_CONFIG?.retirada;
+    if (!cfg || !cfg.ativo) return resultados;
+    // Insere a retirada como primeira opção (grátis, valor 0)
+    const opcaoRetirada = {
+      codigo: 'RETIRADA',
+      nome: cfg.titulo || 'Retirar no local',
+      descricao: cfg.descricao || 'Retirada pessoal na loja',
+      valor: 0,
+      prazo: null,
+      regiao: 'Retirada no local',
+      tabelaInterna: false,
+      retirada: true, // marca para o checkout saber
+    };
+    return [opcaoRetirada, ...resultados];
   }
 
   /* ---------- Estratégia 1: Worker (API oficial Correios) ---------- */

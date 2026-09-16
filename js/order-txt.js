@@ -87,9 +87,16 @@
 
     // ----- Frete -----
     txt += L + '\n';
-    txt += 'FRETE\n';
+    txt += 'ENTREGA / RETIRADA\n';
     txt += L + '\n';
-    if (pedido.shippingOption) {
+    if (pedido.shippingOption && pedido.shippingOption.retirada) {
+      txt += '⚠ ATENÇÃO: CLIENTE VAI RETIRAR NO LOCAL\n';
+      txt += `Local:    ${cfg.store?.enderecoCidade || 'Ribeirão Preto / SP'}\n`;
+      txt += `Endereço: A combinar (enviar no WhatsApp após confirmação)\n`;
+      txt += `Valor:    GRÁTIS (retirada no local)\n`;
+      txt += '\n';
+      txt += '>>> ENVIAR ENDEREÇO COMPLETO PARA O CLIENTE NO WHATSAPP <<<\n\n';
+    } else if (pedido.shippingOption) {
       txt += `Serviço:  ${pedido.shippingOption.nome || '-'}\n`;
       txt += `Código:   ${pedido.shippingOption.codigo || '-'}\n`;
       if (pedido.shippingOption.descricao) txt += `Descrição: ${pedido.shippingOption.descricao}\n`;
@@ -209,8 +216,11 @@
     });
     msg += `\n`;
 
-    msg += `📦 *FRETE*\n`;
-    if (pedido.shippingOption) {
+    msg += `📦 *ENTREGA / RETIRADA*\n`;
+    if (pedido.shippingOption && pedido.shippingOption.retirada) {
+      msg += `🏠 *RETIRAR NO LOCAL* (Ribeirão Preto)\n`;
+      msg += `_Endereço completo: favor enviar no WhatsApp_ ⚠\n\n`;
+    } else if (pedido.shippingOption) {
       msg += `${pedido.shippingOption.nome}`;
       if (pedido.shippingOption.prazo) msg += ` · ${pedido.shippingOption.prazo} dias úteis`;
       msg += `: ${pedido.frete === 0 ? 'Grátis' : formatBRL(pedido.frete)}\n\n`;

@@ -12,9 +12,9 @@ window.CDB_CONFIG = {
   store: {
     name: "Casa dos Botões",
     slogan: "Tudo para sua criatividade",
-    highlight: "+ de 13 mil botões para você!",
-    cepOrigem: "01000000", // [PREENCHER] CEP de origem das encomendas (apenas dígitos)
-    enderecoCidade: "São Paulo / SP", // [PREENCHER] cidade de origem
+    highlight: "Botões para todas as suas criações",
+    cepOrigem: "14015130", // CEP do Centro de Ribeirão Preto (14015-130)
+    enderecoCidade: "Ribeirão Preto / SP",
   },
 
   /* ---------- Contato / WhatsApp ---------- */
@@ -37,7 +37,7 @@ window.CDB_CONFIG = {
     tipoChave: "phone", // "cpf" | "cnpj" | "email" | "phone" | "random"
     // [PREENCHER] Nome do recebedor conforme está no banco (até 25 chars, sem acento)
     nomeRecebedor: "CASA DOS BOTOES",
-    cidadeRecebedor: "SAO PAULO",
+    cidadeRecebedor: "RIBEIRAO PRETO",
     // Identificador da transação (opcional, máximo 25 chars alfanuméricos)
     // Vai ser preenchido dinamicamente com o número do pedido
     identificadorPrefix: "CDB",
@@ -104,6 +104,17 @@ window.CDB_CONFIG = {
       larguraCm: 11,
       alturaCm: 2,
     },
+  },
+
+  /* ---------- Retirada no local ---------- */
+  // Cliente pode optar por retirar o pedido pessoalmente em vez de pagar frete.
+  // Aparece como opção de frete no checkout (valor R$ 0,00 - 'Grátis').
+  retirada: {
+    ativo: true,
+    titulo: "Retirar no local (Ribeirão Preto)",
+    descricao: "Você retira pessoalmente. Endereço completo enviado no WhatsApp após confirmação do pagamento.",
+    valor: 0, // grátis
+    prazo: "Combinar com a loja",
   },
 
   /* ---------- Frete grátis ---------- */

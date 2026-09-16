@@ -689,6 +689,21 @@ ul { list-style: none; }
   color: var(--c-texto-claro);
   margin-bottom: 8px;
 }
+.shipping-aviso.shipping-aviso-retirada {
+  background: rgba(46, 125, 50, 0.08);
+  border-left-color: var(--c-sucesso);
+}
+.shipping-option-retirada {
+  border-left: 3px solid var(--c-sucesso) !important;
+  background: rgba(46, 125, 50, 0.04) !important;
+}
+.shipping-option-retirada.selected {
+  border-color: var(--c-sucesso) !important;
+  background: rgba(46, 125, 50, 0.08) !important;
+}
+.shipping-option-retirada .shipping-option-price {
+  color: var(--c-sucesso);
+}
 .shipping-empty { color: var(--c-texto-claro); font-size: 0.88rem; padding: 16px; background: var(--c-creme); border-radius: var(--r-sm); text-align: center; }
 .shipping-option {
   display: flex; justify-content: space-between; align-items: center;
