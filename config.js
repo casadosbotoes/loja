@@ -160,6 +160,25 @@ window.CDB_CONFIG = {
     dicaSenha: "Padrão da loja (mude em config.js)",
   },
 
+  /* ---------- Sincronização na nuvem (JSONBin.io) ---------- */
+  // Faz TODOS os pedidos aparecerem no painel, independente de qual
+  // aparelho/navegador fez o pedido. Resolve o problema do localStorage.
+  //
+  // COMO CONFIGURAR (3 passos):
+  // 1. Crie conta gratuita em https://jsonbin.io (1 minuto)
+  // 2. No menu lateral, clique em "API Keys" e copie sua chave
+  // 3. Cole abaixo em api_key (entre as aspas)
+  //
+  // bin_id será preenchido automaticamente na primeira vez que um
+  // pedido for sincronizado. Você verá no console do navegador.
+  // Para funcionar em todas as sessões, copie o bin_id do console
+  // e cole abaixo também.
+  sincronizacao: {
+    ativo: true,
+    apiKey: "$2a$10$hmCNJfq0WDVWh9AsBEJbU.iIpNQDldeHFZ8hq1bMvGA9H7Hy0lSYa",
+    binId: "6aab29c4ffd5d160530ffdaa",
+  },
+
   /* ---------- Frete grátis ---------- */
   freteGratis: {
     ativo: true,

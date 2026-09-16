@@ -324,10 +324,15 @@
     <div class="actions">
       <button class="btn btn-sucesso" id="btnImportar">📥 Importar .txt de pedido</button>
       <button class="btn btn-primary" id="btnBaixarTudo">📄 Baixar tudo (.txt)</button>
+      <button class="btn btn-outline" id="btnAtualizar">🔄 Atualizar</button>
       <button class="btn btn-outline" id="btnImprimir">🖨️ Imprimir</button>
       <button class="btn btn-danger" id="btnLimpar">🗑️ Limpar tudo</button>
       <button class="btn btn-outline" id="btnSair" style="margin-left: auto;">🚪 Sair</button>
       <input type="file" id="fileInput" class="file-input" accept=".txt" multiple>
+    </div>
+
+    <div id="statusSync" style="background: #fff; padding: 10px 16px; border-radius: 6px; border: 1px solid var(--borda-clara); margin-bottom: 16px; font-size: 0.88rem; color: #666;">
+      💾 Carregando pedidos...
     </div>
 
     <div class="aviso">
@@ -349,6 +354,7 @@
 
   <script src="config.js"></script>
   <script src="js/orders-store.js"></script>
+  <script src="js/sync.js"></script>
   <script>
     (function () {
       const $ = (id) => document.getElementById(id);
@@ -362,8 +368,8 @@
         } catch (e) { return iso; }
       }
 
-      function atualizarStats() {
-        const pedidos = window.CDBOrders.listar();
+      function atualizarStats(pedidos) {
+        if (!pedidos) pedidos = window.CDBOrders.listar();
         $('totalPedidos').textContent = pedidos.length;
         const faturado = pedidos.reduce((s, p) => s + (Number(p.total) || 0), 0);
         $('totalFaturado').textContent = formatBRL(faturado);
@@ -371,15 +377,58 @@
         $('totalRetiradas').textContent = retiradas;
       }
 
-      function renderPedidos() {
-        const pedidos = window.CDBOrders.listar();
+      // Estado: pedidos combinados (nuvem + local)
+      let pedidosExibidos = [];
+      let carregandoNuvem = false;
+
+      async function carregarPedidosNuvem() {
+        if (!window.CDBSync || !window.CDBSync.isAtivo()) return [];
+        carregandoNuvem = true;
+        const statusEl = document.getElementById('statusSync');
+        if (statusEl) statusEl.textContent = '🔄 Sincronizando com a nuvem...';
+        try {
+          const pedidos = await window.CDBSync.listarPedidos();
+          if (statusEl) statusEl.textContent = `☁️ ${pedidos.length} pedidos na nuvem`;
+          return pedidos;
+        } catch (e) {
+          console.error('Erro ao carregar nuvem:', e);
+          if (statusEl) statusEl.textContent = '⚠️ Erro ao sincronizar';
+          return [];
+        } finally {
+          carregandoNuvem = false;
+        }
+      }
+
+      // Mescla pedidos da nuvem + local (sem duplicar por número)
+      function mesclarPedidos(nuvem, local) {
+        const mapa = new Map();
+        // Primeiro adiciona todos da nuvem
+        for (const p of nuvem) {
+          if (p && p.numero) mapa.set(p.numero, p);
+        }
+        // Depois adiciona os locais que não estão na nuvem
+        for (const p of local) {
+          if (p && p.numero && !mapa.has(p.numero)) {
+            mapa.set(p.numero, p);
+          }
+        }
+        // Converte para array e ordena por data (mais recente primeiro)
+        return Array.from(mapa.values()).sort((a, b) => {
+          const dataA = a.salvoEm || a.data || '';
+          const dataB = b.salvoEm || b.data || '';
+          return dataB.localeCompare(dataA);
+        });
+      }
+
+      function renderPedidos(pedidos) {
+        if (!pedidos) pedidos = pedidosExibidos;
         const cont = $('pedidosLista');
         if (pedidos.length === 0) {
           cont.innerHTML = `
             <div class="empty">
               <h3>Nenhum pedido salvo ainda</h3>
-              <p>Os pedidos que você fizer neste navegador aparecerão aqui automaticamente.</p>
-              <p style="margin-top: 12px;">Para adicionar pedidos recebidos por e-mail/WhatsApp, clique em <strong>"Importar .txt de pedido"</strong>.</p>
+              <p>Os pedidos aparecem aqui automaticamente assim que são finalizados no site.</p>
+              <p style="margin-top: 12px;">💡 Você também pode importar um .txt manualmente clicando em <strong>"Importar .txt de pedido"</strong>.</p>
             </div>`;
           return;
         }
@@ -393,11 +442,12 @@
           `).join('');
           const statusClass = isRetirada ? 'retirada' : '';
           const statusText = isRetirada ? '🏠 Retirar no local' : '📦 Enviar por Correios';
+          const origem = p.salvoEm ? (p.salvoEm.includes('T') ? '☁️' : '💾') : '💾';
           return `
             <div class="pedido-card">
               <div class="pedido-header">
                 <div>
-                  <div class="pedido-numero">${escapeHTML(p.numero)}</div>
+                  <div class="pedido-numero">${escapeHTML(p.numero)} ${origem}</div>
                   <div class="pedido-data">Salvo em: ${formatData(p.salvoEm)}${p.data ? ' · Pedido em: ' + escapeHTML(p.data) : ''}</div>
                   <span class="pedido-status ${statusClass}">${statusText}</span>
                 </div>
@@ -443,7 +493,8 @@
 
       // Ações globais
       window.baixarPedido = function (numero) {
-        const pedido = window.CDBOrders.listar().find(p => p.numero === numero);
+        const pedido = pedidosExibidos.find(p => p.numero === numero)
+          || window.CDBOrders.listar().find(p => p.numero === numero);
         if (!pedido) return;
         const txt = gerarTxtPedido(pedido);
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
@@ -458,7 +509,8 @@
       };
 
       window.enviarWhatsApp = function (numero) {
-        const pedido = window.CDBOrders.listar().find(p => p.numero === numero);
+        const pedido = pedidosExibidos.find(p => p.numero === numero)
+          || window.CDBOrders.listar().find(p => p.numero === numero);
         if (!pedido) return;
         const tel = (window.CDB_CONFIG?.whatsapp?.numero || '').replace(/\D/g, '');
         if (!tel || !pedido.cliente?.telefone) {
@@ -473,9 +525,14 @@
         window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(msg)}`, '_blank');
       };
 
-      window.removerPedido = function (numero) {
+      window.removerPedido = async function (numero) {
         if (!confirm(`Remover o pedido ${numero}? Esta ação não pode ser desfeita.`)) return;
+        // Remove do localStorage
         window.CDBOrders.remover(numero);
+        // Remove da nuvem
+        if (window.CDBSync && window.CDBSync.isAtivo()) {
+          await window.CDBSync.removerPedido(numero);
+        }
         atualizarTudo();
       };
 
@@ -527,7 +584,12 @@
         for (const file of files) {
           const txt = await file.text();
           const pedido = window.CDBOrders.parseTxt(txt);
+          // Adiciona no localStorage
           if (window.CDBOrders.adicionar(pedido)) adicionados++;
+          // Também adiciona na nuvem (se ativa)
+          if (window.CDBSync && window.CDBSync.isAtivo()) {
+            await window.CDBSync.adicionarPedido(pedido);
+          }
         }
         alert(`${adicionados} pedido(s) importado(s) com sucesso!`);
         e.target.value = '';
@@ -535,7 +597,7 @@
       });
 
       $('btnBaixarTudo').addEventListener('click', () => {
-        const pedidos = window.CDBOrders.listar();
+        const pedidos = pedidosExibidos.length > 0 ? pedidosExibidos : window.CDBOrders.listar();
         if (pedidos.length === 0) {
           alert('Nenhum pedido para baixar.');
           return;
@@ -571,10 +633,29 @@
         document.getElementById('senhaInput').focus();
       });
 
-      function atualizarTudo() {
-        atualizarStats();
-        renderPedidos();
+      // Botão Atualizar - recarrega da nuvem
+      $('btnAtualizar').addEventListener('click', () => {
+        atualizarTudo();
+      });
+
+      async function atualizarTudo() {
+        // Primeiro mostra os pedidos locais (rápido)
+        const local = window.CDBOrders.listar();
+        pedidosExibidos = local;
+        atualizarStats(local);
+        renderPedidos(local);
+
+        // Depois carrega da nuvem e mescla
+        if (window.CDBSync && window.CDBSync.isAtivo()) {
+          const nuvem = await carregarPedidosNuvem();
+          pedidosExibidos = mesclarPedidos(nuvem, local);
+          atualizarStats(pedidosExibidos);
+          renderPedidos(pedidosExibidos);
+        }
       }
+
+      // Substitui a função antiga - chamadas existentes continuam funcionando
+      window.atualizarTudo = atualizarTudo;
 
       // === LÓGICA DE LOGIN ===
       const SENHA_CORRETA = window.CDB_CONFIG?.pedidos?.senha || 'casabotoes2024';

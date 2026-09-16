@@ -336,11 +336,38 @@
           });
           const salvou = global.CDBOrders.adicionar(pedidoComTxt);
           if (salvou) {
-            console.log('[checkout] ✓ Pedido salvo no histórico:', state.pedido.numero);
+            console.log('[checkout] ✓ Pedido salvo no histórico local:', state.pedido.numero);
           }
         }
       } catch (e) {
-        console.warn('[checkout] erro ao salvar no histórico:', e);
+        console.warn('[checkout] erro ao salvar no histórico local:', e);
+      }
+
+      // Salva o pedido na NUVEM (JSONBin.io) — aparece em TODOS os aparelhos
+      try {
+        if (global.CDBSync && global.CDBSync.isAtivo()) {
+          const pedidoSync = Object.assign({}, state.pedido, {
+            rawTxt: global.CDBOrderTxt
+              ? global.CDBOrderTxt.gerarTxtPedido(state.pedido, { paymentMethod: state.paymentMethod })
+              : '',
+          });
+          global.CDBSync.adicionarPedido(pedidoSync).then(result => {
+            if (result.success) {
+              console.log('[checkout] ✓ Pedido sincronizado na nuvem');
+              // Se criou um bin novo, avisa o usuário para pegar o bin_id
+              if (result.binId && !global.CDB_CONFIG?.sincronizacao?.binId) {
+                console.log('═══════════════════════════════════════════════════');
+                console.log('🎯 BIN ID CRIADO! Copie este ID e cole em config.js:');
+                console.log('   binId: "' + result.binId + '"');
+                console.log('═══════════════════════════════════════════════════');
+              }
+            } else if (result.reason !== 'desativado') {
+              console.warn('[checkout] Falha na sincronização:', result.error);
+            }
+          }).catch(err => console.warn('[checkout] Erro sync:', err));
+        }
+      } catch (e) {
+        console.warn('[checkout] erro ao sincronizar:', e);
       }
 
       // Caminho por método de pagamento
