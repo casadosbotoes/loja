@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pedidos - Casa dos Botões</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%236b1f2a'/><circle cx='16' cy='16' r='4' fill='%23f6ecd9'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    * { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #faf3e7;
+      color: #2a1810;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    :root {
+      --vinho: #6b1f2a;
+      --vinho-escuro: #4a1620;
+      --creme: #f6ecd9;
+      --creme-escuro: #ead9b8;
+      --madeira: #8b5a3c;
+      --sucesso: #2e7d32;
+      --erro: #c62828;
+      --borda: #d8c5a3;
+      --borda-clara: #e8dcc0;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .header {
+      background: linear-gradient(135deg, var(--vinho) 0%, var(--vinho-escuro) 100%);
+      color: #fff;
+      padding: 24px 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 20px rgba(74, 22, 32, 0.25);
+    }
+    .header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .header .sub { font-size: 0.95rem; opacity: 0.85; }
+    .header .stats { display: flex; gap: 24px; margin-top: 16px; }
+    .header .stat { background: rgba(255,255,255,0.12); padding: 10px 16px; border-radius: 8px; }
+    .header .stat strong { display: block; font-size: 1.5rem; font-weight: 700; }
+    .header .stat span { font-size: 0.78rem; opacity: 0.85; }
+    .actions {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 24px;
+      background: #fff;
+      padding: 16px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--borda-clara);
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--vinho); color: #fff; }
+    .btn-primary:hover { background: var(--vinho-escuro); }
+    .btn-outline { background: #fff; color: var(--vinho); border-color: var(--vinho); }
+    .btn-outline:hover { background: var(--vinho); color: #fff; }
+    .btn-danger { background: transparent; color: var(--erro); border-color: var(--erro); }
+    .btn-danger:hover { background: var(--erro); color: #fff; }
+    .btn-sucesso { background: var(--sucesso); color: #fff; }
+    .btn-sucesso:hover { background: #1e6e23; }
+    .btn-small { padding: 6px 12px; font-size: 0.82rem; }
+    .file-input { display: none; }
+    .aviso {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-left: 4px solid #f39c12;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      font-size: 0.92rem;
+    }
+    .aviso strong { color: #856404; }
+    .empty {
+      background: #fff;
+      border: 2px dashed var(--borda);
+      padding: 60px 20px;
+      text-align: center;
+      border-radius: 8px;
+      color: #888;
+    }
+    .empty h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--vinho); margin-bottom: 8px; }
+    .empty p { font-size: 0.95rem; }
+    .pedido-card {
+      background: #fff;
+      border: 1px solid var(--borda-clara);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(74, 22, 32, 0.05);
+      transition: box-shadow 0.2s;
+    }
+    .pedido-card:hover { box-shadow: 0 4px 12px rgba(74, 22, 32, 0.1); }
+    .pedido-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 16px; flex-wrap: wrap;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--borda-clara);
+      margin-bottom: 12px;
+    }
+    .pedido-numero {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--vinho);
+    }
+    .pedido-data { font-size: 0.82rem; color: #888; }
+    .pedido-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #fff3cd;
+      color: #856404;
+      margin-top: 4px;
+    }
+    .pedido-status.retirada {
+      background: #d4edda;
+      color: var(--sucesso);
+    }
+    .pedido-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 12px;
+    }
+    .pedido-section h4 {
+      font-size: 0.78rem;
+      color: var(--madeira);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .pedido-section p { font-size: 0.92rem; margin-bottom: 2px; }
+    .pedido-itens {
+      grid-column: 1 / -1;
+      background: var(--creme);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+    .pedido-itens h4 {
+      font-size: 0.78rem;
+      color: var(--madeira);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .pedido-itens ul { list-style: none; }
+    .pedido-itens li {
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--borda);
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    .pedido-itens li:last-child { border-bottom: none; }
+    .pedido-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 16px;
+      background: var(--vinho);
+      color: #fff;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    .pedido-total strong { font-size: 1.4rem; font-family: 'Cormorant Garamond', serif; }
+    .pedido-acoes {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--borda-clara);
+    }
+    @media (max-width: 700px) {
+      .pedido-grid { grid-template-columns: 1fr; }
+      .header { padding: 16px 20px; }
+      .header h1 { font-size: 1.5rem; }
+      .header .stats { flex-wrap: wrap; gap: 12px; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+    .print-only { display: none; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .header, .actions, .aviso, .pedido-acoes { display: none; }
+      .pedido-card { page-break-inside: avoid; box-shadow: none; }
+      .print-only { display: block; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <h1>📋 Pedidos — Casa dos Botões</h1>
+      <p class="sub">Histórico de todos os pedidos recebidos pelo site</p>
+      <div class="stats">
+        <div class="stat">
+          <strong id="totalPedidos">0</strong>
+          <span>Total de pedidos</span>
+        </div>
+        <div class="stat">
+          <strong id="totalFaturado">R$ 0,00</strong>
+          <span>Faturamento total</span>
+        </div>
+        <div class="stat">
+          <strong id="totalRetiradas">0</strong>
+          <span>Retiradas no local</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-sucesso" id="btnImportar">📥 Importar .txt de pedido</button>
+      <button class="btn btn-primary" id="btnBaixarTudo">📄 Baixar tudo (.txt)</button>
+      <button class="btn btn-outline" id="btnImprimir">🖨️ Imprimir</button>
+      <button class="btn btn-danger" id="btnLimpar">🗑️ Limpar tudo</button>
+      <input type="file" id="fileInput" class="file-input" accept=".txt" multiple>
+    </div>
+
+    <div class="aviso">
+      <strong>ℹ️ Como funciona:</strong> Esta página salva pedidos no <strong>navegador</strong> (localStorage).
+      Pedidos feitos neste navegador aparecem automaticamente. Para pedidos recebidos por e-mail/WhatsApp,
+      clique em <strong>"Importar .txt de pedido"</strong> e selecione o arquivo .txt do pedido.
+      Para acessar de outro aparelho, use o botão <strong>"Baixar tudo (.txt)"</strong> e importe no novo aparelho.
+    </div>
+
+    <div id="pedidosLista"></div>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/orders-store.js"></script>
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const formatBRL = (n) => 'R$ ' + (Number(n) || 0).toFixed(2).replace('.', ',');
+
+      function formatData(iso) {
+        if (!iso) return '';
+        try {
+          const d = new Date(iso);
+          return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+        } catch (e) { return iso; }
+      }
+
+      function atualizarStats() {
+        const pedidos = window.CDBOrders.listar();
+        $('totalPedidos').textContent = pedidos.length;
+        const faturado = pedidos.reduce((s, p) => s + (Number(p.total) || 0), 0);
+        $('totalFaturado').textContent = formatBRL(faturado);
+        const retiradas = pedidos.filter(p => p.shippingOption?.retirada).length;
+        $('totalRetiradas').textContent = retiradas;
+      }
+
+      function renderPedidos() {
+        const pedidos = window.CDBOrders.listar();
+        const cont = $('pedidosLista');
+        if (pedidos.length === 0) {
+          cont.innerHTML = `
+            <div class="empty">
+              <h3>Nenhum pedido salvo ainda</h3>
+              <p>Os pedidos que você fizer neste navegador aparecerão aqui automaticamente.</p>
+              <p style="margin-top: 12px;">Para adicionar pedidos recebidos por e-mail/WhatsApp, clique em <strong>"Importar .txt de pedido"</strong>.</p>
+            </div>`;
+          return;
+        }
+        cont.innerHTML = pedidos.map(p => {
+          const isRetirada = p.shippingOption?.retirada;
+          const itens = (p.items || []).map(i => `
+            <li>
+              <span>${i.qty}× ${escapeHTML(i.nome)}</span>
+              <strong>${formatBRL(i.preco * i.qty)}</strong>
+            </li>
+          `).join('');
+          const statusClass = isRetirada ? 'retirada' : '';
+          const statusText = isRetirada ? '🏠 Retirar no local' : '📦 Enviar por Correios';
+          return `
+            <div class="pedido-card">
+              <div class="pedido-header">
+                <div>
+                  <div class="pedido-numero">${escapeHTML(p.numero)}</div>
+                  <div class="pedido-data">Salvo em: ${formatData(p.salvoEm)}${p.data ? ' · Pedido em: ' + escapeHTML(p.data) : ''}</div>
+                  <span class="pedido-status ${statusClass}">${statusText}</span>
+                </div>
+              </div>
+              <div class="pedido-grid">
+                <div class="pedido-section">
+                  <h4>👤 Cliente</h4>
+                  <p><strong>${escapeHTML(p.cliente?.nome || '-')}</strong></p>
+                  <p>📞 ${escapeHTML(p.cliente?.telefone || '-')}</p>
+                </div>
+                <div class="pedido-section">
+                  <h4>📍 Entrega</h4>
+                  ${isRetirada
+                    ? '<p style="color: var(--sucesso)"><strong>🏠 Retirar no local</strong></p><p>Ribeirão Preto/SP</p>'
+                    : `<p>${escapeHTML(p.cliente?.endereco || '-')}</p><p>${escapeHTML(p.cliente?.cidade || '-')} / ${escapeHTML(p.cliente?.uf || '-')}</p><p>CEP: ${escapeHTML(p.cliente?.cep || '-')}</p>`
+                  }
+                </div>
+                ${itens ? `
+                <div class="pedido-itens">
+                  <h4>🛒 Itens</h4>
+                  <ul>${itens}</ul>
+                </div>` : ''}
+              </div>
+              <div class="pedido-total">
+                <span>TOTAL DO PEDIDO</span>
+                <strong>${formatBRL(p.total)}</strong>
+              </div>
+              <div class="pedido-acoes">
+                <button class="btn btn-outline btn-small" onclick="baixarPedido('${p.numero}')">📄 Baixar .txt</button>
+                <button class="btn btn-outline btn-small" onclick="enviarWhatsApp('${p.numero}')">📱 Abrir no WhatsApp</button>
+                <button class="btn btn-danger btn-small" onclick="removerPedido('${p.numero}')">🗑️ Remover</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function escapeHTML(s) {
+        return String(s || '').replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
+      }
+
+      // Ações globais
+      window.baixarPedido = function (numero) {
+        const pedido = window.CDBOrders.listar().find(p => p.numero === numero);
+        if (!pedido) return;
+        const txt = gerarTxtPedido(pedido);
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pedido-${pedido.numero}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+
+      window.enviarWhatsApp = function (numero) {
+        const pedido = window.CDBOrders.listar().find(p => p.numero === numero);
+        if (!pedido) return;
+        const tel = (window.CDB_CONFIG?.whatsapp?.numero || '').replace(/\D/g, '');
+        if (!tel || !pedido.cliente?.telefone) {
+          alert('Telefone do cliente não disponível');
+          return;
+        }
+        // Pega só os dígitos do telefone do cliente
+        const telCliente = pedido.cliente.telefone.replace(/\D/g, '');
+        const msg = `Olá ${pedido.cliente.nome}! Sou da Casa dos Botões. ` +
+          `Recebemos seu pedido ${pedido.numero} no valor de ${formatBRL(pedido.total)}. ` +
+          `Vamos confirmar os detalhes?`;
+        window.open(`https://wa.me/${telCliente}?text=${encodeURIComponent(msg)}`, '_blank');
+      };
+
+      window.removerPedido = function (numero) {
+        if (!confirm(`Remover o pedido ${numero}? Esta ação não pode ser desfeita.`)) return;
+        window.CDBOrders.remover(numero);
+        atualizarTudo();
+      };
+
+      function gerarTxtPedido(p) {
+        // Reusa o conteúdo do .txt original se existir
+        if (p.rawTxt) return p.rawTxt;
+        // Senão, gera um do zero
+        let txt = '';
+        txt += '============================================================\n';
+        txt += '       CASA DOS BOTÕES - COMPROVANTE DE PEDIDO\n';
+        txt += '============================================================\n\n';
+        txt += `PEDIDO Nº: ${p.numero}\n`;
+        txt += `DATA/HORA: ${p.data || formatData(p.salvoEm)}\n\n`;
+        txt += '------------------------------------------------------------\n';
+        txt += 'DADOS DO CLIENTE\n';
+        txt += '------------------------------------------------------------\n';
+        txt += `Nome:      ${p.cliente?.nome || '-'}\n`;
+        txt += `Telefone:  ${p.cliente?.telefone || '-'}\n\n`;
+        txt += '------------------------------------------------------------\n';
+        txt += 'ENDEREÇO DE ENTREGA\n';
+        txt += '------------------------------------------------------------\n';
+        txt += `CEP:       ${p.cliente?.cep || '-'}\n`;
+        txt += `Endereço:  ${p.cliente?.endereco || '-'}\n`;
+        txt += `Cidade:    ${p.cliente?.cidade || '-'}\n`;
+        txt += `UF:        ${p.cliente?.uf || '-'}\n\n`;
+        txt += '------------------------------------------------------------\n';
+        txt += 'ITENS DO PEDIDO\n';
+        txt += '------------------------------------------------------------\n';
+        (p.items || []).forEach((i, idx) => {
+          txt += `${idx + 1}. ${i.nome}\n`;
+          txt += `   Quantidade: ${i.qty}\n`;
+          txt += `   Subtotal:   ${formatBRL(i.preco * i.qty)}\n\n`;
+        });
+        txt += '------------------------------------------------------------\n';
+        txt += 'RESUMO FINANCEIRO\n';
+        txt += '------------------------------------------------------------\n';
+        txt += `Subtotal: ${formatBRL(p.subtotal || 0)}\n`;
+        txt += `Frete:    ${p.frete === 0 ? 'GRÁTIS' : formatBRL(p.frete)}\n`;
+        txt += `TOTAL:    ${formatBRL(p.total)}\n\n`;
+        txt += '============================================================\n';
+        return txt;
+      }
+
+      // Botões
+      $('btnImportar').addEventListener('click', () => $('fileInput').click());
+      $('fileInput').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        let adicionados = 0;
+        for (const file of files) {
+          const txt = await file.text();
+          const pedido = window.CDBOrders.parseTxt(txt);
+          if (window.CDBOrders.adicionar(pedido)) adicionados++;
+        }
+        alert(`${adicionados} pedido(s) importado(s) com sucesso!`);
+        e.target.value = '';
+        atualizarTudo();
+      });
+
+      $('btnBaixarTudo').addEventListener('click', () => {
+        const pedidos = window.CDBOrders.listar();
+        if (pedidos.length === 0) {
+          alert('Nenhum pedido para baixar.');
+          return;
+        }
+        // Concatena todos os .txt em um único arquivo
+        const todosTxt = pedidos.map(p => gerarTxtPedido(p)).join('\n\n');
+        const blob = new Blob([todosTxt], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const data = new Date().toISOString().slice(0, 10);
+        a.download = `pedidos-casadosbotoes-${data}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      $('btnImprimir').addEventListener('click', () => window.print());
+
+      $('btnLimpar').addEventListener('click', () => {
+        if (!confirm('⚠️ ATENÇÃO: isso vai apagar TODOS os pedidos salvos neste navegador. Tem certeza?')) return;
+        if (!confirm('Confirma novamente? Esta ação NÃO pode ser desfeita.')) return;
+        window.CDBOrders.limpar();
+        atualizarTudo();
+      });
+
+      function atualizarTudo() {
+        atualizarStats();
+        renderPedidos();
+      }
+
+      // Inicializa
+      atualizarTudo();
+    })();
+  </script>
+</body>
+</html>

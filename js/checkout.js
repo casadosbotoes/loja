@@ -325,6 +325,22 @@
         }).catch(err => console.warn('[checkout] Erro e-mail:', err));
       }
 
+      // Salva o pedido no histórico (localStorage) para a página pedidos.html
+      // Também guarda o .txt completo para re-download
+      try {
+        if (global.CDBOrders) {
+          const pedidoComTxt = Object.assign({}, state.pedido, {
+            rawTxt: global.CDBOrderTxt
+              ? global.CDBOrderTxt.gerarTxtPedido(state.pedido, { paymentMethod: state.paymentMethod })
+              : '',
+          });
+          global.CDBOrders.adicionar(pedidoComTxt);
+          console.log('[checkout] Pedido salvo no histórico');
+        }
+      } catch (e) {
+        console.warn('[checkout] erro ao salvar no histórico:', e);
+      }
+
       // Caminho por método de pagamento
       if (state.paymentMethod === 'pix') {
         // Gera QR Code Pix localmente (sem MP)
