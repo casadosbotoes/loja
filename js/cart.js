@@ -174,7 +174,7 @@
       // Quantidade por pacote (extraída do campo "unidade")
       const qtdPorPacote = extrairQtdPorPacote(item.unidade);
       const totalBotoes = item.qty * qtdPorPacote;
-      const temPacote = qtdPorPacote > 1;
+      // Sempre mostra o cálculo de botões (mesmo se for 1: "1 pacote × 1 = 1 botão")
       return `
       <div class="cart-item" data-id="${item.id}">
         <div class="cart-item-img">
@@ -191,7 +191,7 @@
             <span class="qty-val">${item.qty}</span>
             <button class="qty-btn" data-action="inc">+</button>
           </div>
-          ${temPacote ? `<span class="cart-item-total-botoes">${item.qty} pacote${item.qty > 1 ? 's' : ''} × ${qtdPorPacote} = <strong>${totalBotoes} botões</strong></span>` : ''}
+          <span class="cart-item-total-botoes">${item.qty} pacote${item.qty > 1 ? 's' : ''} × ${qtdPorPacote} = <strong>${totalBotoes} botões</strong></span>
           <button class="cart-item-remove" data-action="remove">Remover</button>
         </div>
         <div></div>

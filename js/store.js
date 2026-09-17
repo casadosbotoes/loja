@@ -150,6 +150,15 @@
       let estoqueBadge = '';
       let botaoCarrinho = '';
       let cardEsgotado = '';
+      // Quantidade por pacote (extraída do campo "unidade")
+      const qtdPorPacote = (function() {
+        const m = String(p.unidade || '').match(/(\d+)\s*unidades?/i);
+        return m ? parseInt(m[1], 10) : 1;
+      })();
+      // Badge destacado com a quantidade de botões por pacote
+      const pacoteBadge = qtdPorPacote > 1
+        ? `<span class="product-badge badge-pacote">📦 ${qtdPorPacote} un.</span>`
+        : '';
       if (global.CDBEstoque && p.estoque !== undefined && p.estoque !== 9999) {
         const atual = global.CDBEstoque.getEstoque(p.id);
         if (atual === 0) {
@@ -170,7 +179,7 @@
       return `
         <article class="product-card ${cardEsgotado}" data-id="${p.id}">
           <div class="product-img" data-action="view">
-            <div class="product-badges">${badges.join('')}${galeriaBadges}${estoqueBadge}</div>
+            <div class="product-badges">${badges.join('')}${galeriaBadges}${pacoteBadge}${estoqueBadge}</div>
             <img src="images/products/${imgPrincipal}" alt="${escapeHTML(p.nome)}" loading="lazy"
                  onerror="this.onerror=null;this.src='images/products/${imgPrincipal.replace(/\.webp$/, '.jpg')}'">
           </div>
@@ -182,6 +191,7 @@
               <span class="preco-atual">${formatBRL(p.preco)}</span>
               ${precoAntigo}
             </div>
+            ${qtdPorPacote > 1 ? `<span class="product-price-per-unit">${formatBRL(p.preco / qtdPorPacote)} por botão</span>` : ''}
           </div>
           <div class="product-actions">
             ${botaoCarrinho}
@@ -260,6 +270,14 @@
             <span class="preco-atual">${formatBRL(p.preco)}</span>
             ${precoAntigo}
           </div>
+          ${(() => {
+            const qtdMatch = String(p.unidade || '').match(/(\d+)\s*unidades?/i);
+            const qtd = qtdMatch ? parseInt(qtdMatch[1], 10) : 1;
+            if (qtd > 1) {
+              return `<span class="product-price-per-unit">${formatBRL(p.preco / qtd)} por botão</span>`;
+            }
+            return '';
+          })()}
           <p class="product-modal-desc">${escapeHTML(p.descricao)}</p>
           <div class="product-modal-detalhes">
             <h4>Detalhes do produto</h4>

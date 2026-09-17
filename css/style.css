@@ -1130,6 +1130,16 @@ ul { list-style: none; }
   background: #2e7d32;
   color: #fff;
 }
+.product-badge.badge-pacote {
+  background: #1976d2;
+  color: #fff;
+}
+.product-price-per-unit {
+  font-size: 0.72rem;
+  color: var(--c-texto-claro);
+  font-style: italic;
+  margin-top: 2px;
+}
 .product-badge.badge-pouco {
   background: #f57c00;
   color: #fff;
