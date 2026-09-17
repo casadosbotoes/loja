@@ -1184,6 +1184,22 @@ ul { list-style: none; }
   background: rgba(46, 125, 50, 0.08);
   border-left-color: var(--c-sucesso);
 }
+.retirada-endereco {
+  background: rgba(46, 125, 50, 0.06);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  border-left: 3px solid var(--c-sucesso);
+  padding: 12px 14px;
+  border-radius: 4px;
+  margin: 8px 0 12px 0;
+  font-size: 0.88rem;
+  color: var(--c-texto);
+  line-height: 1.5;
+}
+.retirada-endereco small {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--c-texto-claro);
+}
 .shipping-option-retirada {
   border-left: 3px solid var(--c-sucesso) !important;
   background: rgba(46, 125, 50, 0.04) !important;

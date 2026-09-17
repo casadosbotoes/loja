@@ -94,12 +94,21 @@
     txt += 'ENTREGA / RETIRADA\n';
     txt += L + '\n';
     if (pedido.shippingOption && pedido.shippingOption.retirada) {
+      const cfg = global.CDB_CONFIG || {};
+      const endRet = cfg.retirada?.endereco;
       txt += '⚠ ATENÇÃO: CLIENTE VAI RETIRAR NO LOCAL\n';
       txt += `Local:    ${cfg.store?.enderecoCidade || 'Ribeirão Preto / SP'}\n`;
-      txt += `Endereço: A combinar (enviar no WhatsApp após confirmação)\n`;
+      if (endRet) {
+        txt += `Endereço: ${endRet.rua || '-'}\n`;
+        txt += `Bairro:   ${endRet.bairro || '-'}\n`;
+        txt += `Cidade:   ${endRet.cidade || '-'} / ${endRet.uf || '-'}\n`;
+        txt += `CEP:      ${endRet.cep || '-'}\n`;
+        if (endRet.referencia) txt += `Ref:      ${endRet.referencia}\n`;
+        if (endRet.horario) txt += `Horário:  ${endRet.horario}\n`;
+      }
       txt += `Valor:    GRÁTIS (retirada no local)\n`;
       txt += '\n';
-      txt += '>>> ENVIAR ENDEREÇO COMPLETO PARA O CLIENTE NO WHATSAPP <<<\n\n';
+      txt += '>>> PEDIDO PRONTO PARA RETIRADA. AVISAR CLIENTE NO WHATSAPP <<<\n\n';
     } else if (pedido.shippingOption) {
       txt += `Serviço:  ${pedido.shippingOption.nome || '-'}\n`;
       txt += `Código:   ${pedido.shippingOption.codigo || '-'}\n`;
@@ -226,8 +235,15 @@
 
     msg += `📦 *ENTREGA / RETIRADA*\n`;
     if (pedido.shippingOption && pedido.shippingOption.retirada) {
+      const cfg = global.CDB_CONFIG || {};
+      const end = cfg.retirada?.endereco;
       msg += `🏠 *RETIRAR NO LOCAL* (Ribeirão Preto)\n`;
-      msg += `_Endereço completo: favor enviar no WhatsApp_ ⚠\n\n`;
+      if (end) {
+        msg += `📍 ${end.rua}\n`;
+        msg += `${end.bairro} — ${end.cidade}/${end.uf}\n`;
+        msg += `CEP: ${end.cep}\n`;
+      }
+      msg += `⏰ ${end?.horario || 'Seg-Sex 9h às 18h'}\n\n`;
     } else if (pedido.shippingOption) {
       msg += `${pedido.shippingOption.nome}`;
       if (pedido.shippingOption.prazo) msg += ` · ${pedido.shippingOption.prazo} dias úteis`;

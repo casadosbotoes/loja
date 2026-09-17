@@ -462,7 +462,7 @@
                 <div class="pedido-section">
                   <h4>📍 Entrega</h4>
                   ${isRetirada
-                    ? '<p style="color: var(--sucesso)"><strong>🏠 Retirar no local</strong></p><p>Ribeirão Preto/SP</p>'
+                    ? `<p style="color: var(--sucesso)"><strong>🏠 Retirar no local</strong></p><p>📍 Rua Visconde de Inhaúma, 580 — Sala 409</p><p>Centro — Ribeirão Preto/SP</p><p>CEP: 14015-100</p><p><small>⏰ Seg-Sex 9h às 18h, Sáb 9h às 13h</small></p>`
                     : `<p><strong>${escapeHTML(p.cliente?.endereco || '-')}, ${escapeHTML(p.cliente?.numero || '⚠ SEM Nº')}</strong></p>${p.cliente?.complemento ? `<p>Complemento: ${escapeHTML(p.cliente.complemento)}</p>` : ''}<p>Bairro: ${escapeHTML(p.cliente?.bairro || '-')}</p>${p.cliente?.referencia ? `<p>Ref: ${escapeHTML(p.cliente.referencia)}</p>` : ''}<p>${escapeHTML(p.cliente?.cidade || '-')} / ${escapeHTML(p.cliente?.uf || '-')}</p><p>CEP: ${escapeHTML(p.cliente?.cep || '-')}</p>`
                   }
                 </div>

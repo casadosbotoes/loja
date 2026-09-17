@@ -125,9 +125,18 @@ window.CDB_CONFIG = {
   retirada: {
     ativo: true,
     titulo: "Retirar no local (Ribeirão Preto)",
-    descricao: "Você retira pessoalmente. Endereço completo enviado no WhatsApp após confirmação do pagamento.",
+    descricao: "Você retira pessoalmente. Endereço completo abaixo.",
     valor: 0, // grátis
     prazo: "Combinar com a loja",
+    endereco: {
+      rua: "Rua Visconde de Inhaúma, 580 - Sala 409",
+      bairro: "Centro",
+      cidade: "Ribeirão Preto",
+      uf: "SP",
+      cep: "14015-100",
+      referencia: "Centro de Ribeirão Preto, próximo à Praça XV de Novembro",
+      horario: "Seg-Sex 9h às 18h | Sáb 9h às 13h",
+    },
   },
 
   /* ---------- E-mail de pedidos (Web3Forms) ---------- */

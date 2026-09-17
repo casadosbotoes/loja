@@ -131,9 +131,11 @@
     const temRetirada = resultados.some(r => r.retirada);
     const regiaoTxt = resultados.find(r => !r.retirada)?.regiao;
     const regiao = regiaoTxt ? `<p class="shipping-regiao">📍 Região de destino: <strong>${escapeHTML(regiaoTxt)}</strong></p>` : '';
+    const cfgRetirada = global.CDB_CONFIG?.retirada;
+    const enderecoRetirada = cfgRetirada?.endereco;
     const aviso = !temRetirada
       ? '<p class="shipping-aviso">Frete estimado por região. O valor final é confirmado no WhatsApp após o pagamento.</p>'
-      : '<p class="shipping-aviso shipping-aviso-retirada">🏠 Tem opção de <strong>retirar no local em Ribeirão Preto</strong> (grátis) ou receber em casa via Correios.</p>';
+      : `<p class="shipping-aviso shipping-aviso-retirada">🏠 Tem opção de <strong>retirar no local em Ribeirão Preto</strong> (grátis) ou receber em casa via Correios.</p>${enderecoRetirada ? `<div class="retirada-endereco"><strong>📍 Endereço de retirada:</strong><br>${escapeHTML(enderecoRetirada.rua)}<br>${escapeHTML(enderecoRetirada.bairro)} — ${escapeHTML(enderecoRetirada.cidade)}/${escapeHTML(enderecoRetirada.uf)}<br>CEP: ${escapeHTML(enderecoRetirada.cep)}<br><small>⏰ ${escapeHTML(enderecoRetirada.horario || 'Seg-Sex 9h às 18h')}</small></div>` : ''}`;
 
     cont.innerHTML = regiao + aviso + resultados.map((r, i) => {
       const prazoTxt = r.prazo ? ' · ' + r.prazo + ' dias úteis' : (r.retirada ? ' · combinar' : '');

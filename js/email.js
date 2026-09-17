@@ -54,9 +54,10 @@
       </tr>
     `).join('');
 
+    const cfgRet = global.CDB_CONFIG?.retirada;
+    const endRet = cfgRet?.endereco;
     const freteTxt = pedido.shippingOption && pedido.shippingOption.retirada
-      ? `<span style="color: #2e7d32; font-weight: bold;">🏠 RETIRAR NO LOCAL (Ribeirão Preto)</span><br>
-         <small>Endereço: enviar no WhatsApp após confirmação</small>`
+      ? `<span style="color: #2e7d32; font-weight: bold;">🏠 RETIRAR NO LOCAL (Ribeirão Preto)</span>${endRet ? `<br><br><strong>📍 Endereço de retirada:</strong><br>${escapeHtml(endRet.rua || '')}<br>${escapeHtml(endRet.bairro || '')} — ${escapeHtml(endRet.cidade || '')}/${escapeHtml(endRet.uf || '')}<br>CEP: ${escapeHtml(endRet.cep || '')}<br><small>⏰ ${escapeHtml(endRet.horario || 'Seg-Sex 9h às 18h')}</small>` : ''}`
       : `${escapeHtml(pedido.shippingOption?.nome || '-')} — ${pedido.frete === 0 ? 'Grátis' : formatBRL(pedido.frete)}`;
 
     const metodos = {
