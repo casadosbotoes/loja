@@ -150,7 +150,7 @@
       let estoqueBadge = '';
       let botaoCarrinho = '';
       let cardEsgotado = '';
-      if (global.CDBEstoque && p.estoque !== undefined && p.estoque !== 9999) {
+      if (global.CDBEstoque && p.estoque !== undefined) {
         const atual = global.CDBEstoque.getEstoque(p.id);
         if (atual === 0) {
           estoqueBadge = '<span class="product-badge badge-esgotado">Esgotado</span>';
@@ -158,6 +158,10 @@
           cardEsgotado = 'esgotado';
         } else if (atual <= 5) {
           estoqueBadge = `<span class="product-badge badge-pouco">Restam ${atual}</span>`;
+          botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
+        } else if (atual >= 9999) {
+          // Sem info de estoque - mostra como "Disponível"
+          estoqueBadge = `<span class="product-badge badge-disponivel">Disponível</span>`;
           botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
         } else {
           estoqueBadge = `<span class="product-badge badge-estoque">${atual} em estoque</span>`;

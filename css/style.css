@@ -1130,6 +1130,10 @@ ul { list-style: none; }
   background: #2e7d32;
   color: #fff;
 }
+.product-badge.badge-disponivel {
+  background: #1976d2;
+  color: #fff;
+}
 .product-badge.badge-pacote {
   background: #1976d2;
   color: #fff;
