@@ -132,10 +132,41 @@
     const regiaoTxt = resultados.find(r => !r.retirada)?.regiao;
     const regiao = regiaoTxt ? `<p class="shipping-regiao">📍 Região de destino: <strong>${escapeHTML(regiaoTxt)}</strong></p>` : '';
     const cfgRetirada = global.CDB_CONFIG?.retirada;
-    const enderecoRetirada = cfgRetirada?.endereco;
+    const endRet = cfgRetirada?.endereco;
+    const mapQuery = endRet?.mapQuery || `${endRet?.rua}, ${endRet?.cidade}, ${endRet?.uf}, ${endRet?.cep}`;
+    const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+    const comoChegarUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
+    const fotoFachada = endRet?.fotoFachada;
+
     const aviso = !temRetirada
       ? '<p class="shipping-aviso">Frete estimado por região. O valor final é confirmado no WhatsApp após o pagamento.</p>'
-      : `<p class="shipping-aviso shipping-aviso-retirada">🏠 Tem opção de <strong>retirar no local em Ribeirão Preto</strong> (grátis) ou receber em casa via Correios.</p>${enderecoRetirada ? `<div class="retirada-endereco"><strong>📍 Endereço de retirada:</strong><br>${escapeHTML(enderecoRetirada.rua)}<br>${escapeHTML(enderecoRetirada.bairro)} — ${escapeHTML(enderecoRetirada.cidade)}/${escapeHTML(enderecoRetirada.uf)}<br>CEP: ${escapeHTML(enderecoRetirada.cep)}<br><small>⏰ ${escapeHTML(enderecoRetirada.horario || 'Seg-Sex 9h às 18h')}</small></div>` : ''}`;
+      : `<p class="shipping-aviso shipping-aviso-retirada">🏠 Tem opção de <strong>retirar no local em Ribeirão Preto</strong> (grátis) ou receber em casa via Correios.</p>${endRet ? `<div class="retirada-card">
+        <div class="retirada-info">
+          <div class="retirada-endereco">
+            <strong>📍 Endereço de retirada:</strong><br>
+            ${escapeHTML(endRet.rua || '')}<br>
+            ${escapeHTML(endRet.bairro || '')} — ${escapeHTML(endRet.cidade || '')}/${escapeHTML(endRet.uf || '')}<br>
+            CEP: ${escapeHTML(endRet.cep || '')}<br>
+            <small>⏰ ${escapeHTML(endRet.horario || 'Seg-Sex 9h às 18h')}</small>
+          </div>
+          ${fotoFachada ? `<div class="retirada-fachada"><img src="images/${fotoFachada}" alt="Fachada do prédio" loading="lazy"></div>` : ''}
+          <div class="retirada-mapa">
+            <iframe src="${mapUrl}" width="100%" height="200" style="border:0;border-radius:6px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de retirada"></iframe>
+          </div>
+          <div class="retirada-acoes">
+            <a href="${comoChegarUrl}" target="_blank" rel="noopener" class="btn btn-outline btn-small">📐 Como chegar</a>
+            ${endRet.referencia ? `<span class="retirada-ref">📌 ${escapeHTML(endRet.referencia)}</span>` : ''}
+          </div>
+          ${endRet.estacionamento ? `
+          <details class="retirada-estacionamento">
+            <summary>🅿️ Estacionamento</summary>
+            <p>${escapeHTML(endRet.estacionamento.texto || '')}</p>
+            ${endRet.estacionamento.locais && endRet.estacionamento.locais.length ? `
+              <ul>${endRet.estacionamento.locais.map(l => `<li><strong>${escapeHTML(l.nome)}</strong> — ${escapeHTML(l.distancia)}</li>`).join('')}</ul>
+            ` : ''}
+          </details>` : ''}
+        </div>
+      </div>` : ''}`;
 
     cont.innerHTML = regiao + aviso + resultados.map((r, i) => {
       const prazoTxt = r.prazo ? ' · ' + r.prazo + ' dias úteis' : (r.retirada ? ' · combinar' : '');

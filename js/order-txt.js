@@ -96,6 +96,8 @@
     if (pedido.shippingOption && pedido.shippingOption.retirada) {
       const cfg = global.CDB_CONFIG || {};
       const endRet = cfg.retirada?.endereco;
+      const mapQuery = endRet?.mapQuery || `${endRet?.rua}, ${endRet?.cidade}, ${endRet?.uf}, ${endRet?.cep}`;
+      const comoChegarUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
       txt += '⚠ ATENÇÃO: CLIENTE VAI RETIRAR NO LOCAL\n';
       txt += `Local:    ${cfg.store?.enderecoCidade || 'Ribeirão Preto / SP'}\n`;
       if (endRet) {
@@ -105,6 +107,10 @@
         txt += `CEP:      ${endRet.cep || '-'}\n`;
         if (endRet.referencia) txt += `Ref:      ${endRet.referencia}\n`;
         if (endRet.horario) txt += `Horário:  ${endRet.horario}\n`;
+      }
+      txt += `Como chegar: ${comoChegarUrl}\n`;
+      if (endRet?.estacionamento?.texto) {
+        txt += `\nEstacionamento:\n${endRet.estacionamento.texto}\n`;
       }
       txt += `Valor:    GRÁTIS (retirada no local)\n`;
       txt += '\n';
@@ -237,13 +243,16 @@
     if (pedido.shippingOption && pedido.shippingOption.retirada) {
       const cfg = global.CDB_CONFIG || {};
       const end = cfg.retirada?.endereco;
+      const mapQuery = end?.mapQuery || `${end?.rua}, ${end?.cidade}, ${end?.uf}, ${end?.cep}`;
+      const comoChegarUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
       msg += `🏠 *RETIRAR NO LOCAL* (Ribeirão Preto)\n`;
       if (end) {
         msg += `📍 ${end.rua}\n`;
         msg += `${end.bairro} — ${end.cidade}/${end.uf}\n`;
         msg += `CEP: ${end.cep}\n`;
       }
-      msg += `⏰ ${end?.horario || 'Seg-Sex 9h às 18h'}\n\n`;
+      msg += `⏰ ${end?.horario || 'Seg-Sex 9h às 18h'}\n`;
+      msg += `📐 Como chegar: ${comoChegarUrl}\n\n`;
     } else if (pedido.shippingOption) {
       msg += `${pedido.shippingOption.nome}`;
       if (pedido.shippingOption.prazo) msg += ` · ${pedido.shippingOption.prazo} dias úteis`;

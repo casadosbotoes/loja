@@ -136,6 +136,21 @@ window.CDB_CONFIG = {
       cep: "14015-100",
       referencia: "Centro de Ribeirão Preto, próximo à Praça XV de Novembro",
       horario: "Seg-Sex 9h às 18h | Sáb 9h às 13h",
+      // Foto da fachada do prédio. Para adicionar sua foto:
+      // 1. Salve a foto em images/fachada.jpg (ou .webp)
+      // 2. Edite abaixo o nome do arquivo
+      fotoFachada: "",
+      // Endereço para embed do Google Maps (URL-encoded)
+      // Não precisa de API key - usa o formato gratuito
+      mapQuery: "Rua Visconde de Inhaúma, 580, Ribeirão Preto, SP, 14015-100",
+      // Estacionamentos próximos (opcional)
+      estacionamento: {
+        texto: "Há vagas na rua (rotativo) e estacionamentos privados próximos. Recomendamos combinar horário para facilitar a retirada.",
+        locais: [
+          { nome: "Estacionamento Central", distancia: "2 min a pé" },
+          { nome: "Vagas na rua (rotativo)", distancia: "Em frente" },
+        ],
+      },
     },
   },
 

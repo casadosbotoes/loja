@@ -1200,6 +1200,106 @@ ul { list-style: none; }
   margin-top: 4px;
   color: var(--c-texto-claro);
 }
+
+/* Card de retirada no checkout */
+.retirada-card {
+  background: #fff;
+  border: 1.5px solid rgba(46, 125, 50, 0.3);
+  border-left: 4px solid var(--c-sucesso);
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin: 8px 0 12px 0;
+}
+
+.retirada-mapa {
+  margin: 12px 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.retirada-mapa iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+.retirada-fachada {
+  margin: 12px 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.retirada-fachada img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.retirada-acoes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 8px 0 12px 0;
+}
+.retirada-acoes .btn {
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1.5px solid var(--c-sucesso);
+  color: var(--c-sucesso);
+  background: rgba(46, 125, 50, 0.06);
+  border-radius: var(--r-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.retirada-acoes .btn:hover {
+  background: var(--c-sucesso);
+  color: #fff;
+}
+.retirada-ref {
+  font-size: 0.82rem;
+  color: var(--c-texto-claro);
+  font-style: italic;
+}
+
+.retirada-estacionamento {
+  background: rgba(46, 125, 50, 0.04);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  margin-top: 8px;
+}
+.retirada-estacionamento summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--c-sucesso);
+  list-style: none;
+  user-select: none;
+}
+.retirada-estacionamento summary::after {
+  content: ' ▼';
+  font-size: 0.7em;
+}
+.retirada-estacionamento[open] summary::after {
+  content: ' ▲';
+}
+.retirada-estacionamento p {
+  margin: 10px 0 8px;
+  font-size: 0.85rem;
+  color: var(--c-texto-claro);
+  line-height: 1.5;
+}
+.retirada-estacionamento ul {
+  list-style: disc;
+  padding-left: 22px;
+}
+.retirada-estacionamento li {
+  font-size: 0.85rem;
+  color: var(--c-texto);
+  margin-bottom: 4px;
+}
 .shipping-option-retirada {
   border-left: 3px solid var(--c-sucesso) !important;
   background: rgba(46, 125, 50, 0.04) !important;

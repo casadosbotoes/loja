@@ -56,8 +56,11 @@
 
     const cfgRet = global.CDB_CONFIG?.retirada;
     const endRet = cfgRet?.endereco;
+    const mapQuery = endRet?.mapQuery || `${endRet?.rua}, ${endRet?.cidade}, ${endRet?.uf}, ${endRet?.cep}`;
+    const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+    const comoChegarUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}`;
     const freteTxt = pedido.shippingOption && pedido.shippingOption.retirada
-      ? `<span style="color: #2e7d32; font-weight: bold;">🏠 RETIRAR NO LOCAL (Ribeirão Preto)</span>${endRet ? `<br><br><strong>📍 Endereço de retirada:</strong><br>${escapeHtml(endRet.rua || '')}<br>${escapeHtml(endRet.bairro || '')} — ${escapeHtml(endRet.cidade || '')}/${escapeHtml(endRet.uf || '')}<br>CEP: ${escapeHtml(endRet.cep || '')}<br><small>⏰ ${escapeHtml(endRet.horario || 'Seg-Sex 9h às 18h')}</small>` : ''}`
+      ? `<span style="color: #2e7d32; font-weight: bold;">🏠 RETIRAR NO LOCAL (Ribeirão Preto)</span>${endRet ? `<br><br><strong>📍 Endereço de retirada:</strong><br>${escapeHtml(endRet.rua || '')}<br>${escapeHtml(endRet.bairro || '')} — ${escapeHtml(endRet.cidade || '')}/${escapeHtml(endRet.uf || '')}<br>CEP: ${escapeHtml(endRet.cep || '')}<br><small>⏰ ${escapeHtml(endRet.horario || 'Seg-Sex 9h às 18h')}</small><br><br><a href="${comoChegarUrl}" target="_blank" style="color: #2e7d32; font-weight: bold; text-decoration: none; padding: 8px 16px; background: rgba(46,125,50,0.1); border-radius: 4px; display: inline-block;">📐 Como chegar (Google Maps)</a><br><br><iframe src="${mapEmbedUrl}" width="100%" height="200" style="border:0;border-radius:6px;" loading="lazy"></iframe>${endRet.estacionamento ? `<br><br><small><strong>🅿️ Estacionamento:</strong> ${escapeHtml(endRet.estacionamento.texto || '')}</small>` : ''}` : ''}`
       : `${escapeHtml(pedido.shippingOption?.nome || '-')} — ${pedido.frete === 0 ? 'Grátis' : formatBRL(pedido.frete)}`;
 
     const metodos = {
