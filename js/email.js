@@ -37,22 +37,33 @@
     return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ` +
            `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   }
+  // Extrai a quantidade de unidades por pacote
+  // Ex: "pacote com 6 unidades" → 6
+  function extrairQtdPorPacote(unidadeStr) {
+    if (!unidadeStr) return 1;
+    const m = String(unidadeStr).match(/(\d+)\s*unidades?/i);
+    if (m) return parseInt(m[1], 10);
+    return 1;
+  }
 
   /* ---------- Monta o HTML do e-mail (formato bonito) ---------- */
   function gerarHtmlEmail(pedido, opts) {
     opts = opts || {};
-    const itens = pedido.items.map((i, idx) => `
+    const itens = pedido.items.map((i, idx) => {
+      const qtdPorPacote = extrairQtdPorPacote(i.unidade);
+      const totalBotoes = i.qty * qtdPorPacote;
+      return `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">${idx + 1}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">
           <strong>${escapeHtml(i.nome)}</strong><br>
-          <small style="color: #888;">${escapeHtml(i.unidade || '')}</small>
+          <small style="color: #888;">${escapeHtml(i.unidade || '')}${qtdPorPacote > 1 ? ` · 📦 ${i.qty} pacote${i.qty > 1 ? 's' : ''} × ${qtdPorPacote} = ${totalBotoes} botões` : ''}</small>
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${i.qty}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatBRL(i.preco)}</td>
         <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;"><strong>${formatBRL(i.preco * i.qty)}</strong></td>
       </tr>
-    `).join('');
+    `;}).join('');
 
     const cfgRet = global.CDB_CONFIG?.retirada;
     const endRet = cfgRet?.endereco;

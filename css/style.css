@@ -957,6 +957,12 @@ ul { list-style: none; }
 .cart-item-unid { font-size: 0.78rem; color: var(--c-texto-claro); }
 .cart-item-price { font-size: 0.95rem; color: var(--c-vinho); font-weight: 600; font-family: 'Cormorant Garamond', serif; }
 .qty-control { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+.qty-control .qty-label {
+  font-size: 0.75rem;
+  color: var(--c-texto-claro);
+  margin-right: 4px;
+  font-weight: 500;
+}
 .qty-btn {
   width: 28px; height: 28px;
   border: 1px solid var(--c-borda);
@@ -968,6 +974,18 @@ ul { list-style: none; }
 }
 .qty-btn:hover { background: var(--c-vinho); color: #fff; border-color: var(--c-vinho); }
 .qty-val { min-width: 32px; text-align: center; font-weight: 600; }
+.cart-item-total-botoes {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--c-texto-claro);
+  font-style: italic;
+}
+.cart-item-total-botoes strong {
+  color: var(--c-vinho);
+  font-style: normal;
+  font-weight: 700;
+}
 .cart-item-remove {
   align-self: start;
   font-size: 0.78rem;

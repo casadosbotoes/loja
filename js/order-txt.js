@@ -32,6 +32,15 @@
   }
   function linha(char = '-', n = 60) { return char.repeat(n); }
 
+  // Extrai a quantidade de unidades por pacote do campo "unidade"
+  // Ex: "pacote com 6 unidades" → 6
+  function extrairQtdPorPacote(unidadeStr) {
+    if (!unidadeStr) return 1;
+    const m = String(unidadeStr).match(/(\d+)\s*unidades?/i);
+    if (m) return parseInt(m[1], 10);
+    return 1;
+  }
+
   /* ---------- Gera o conteúdo .txt ----------
    * pedido = { numero, subtotal, frete, total, items, cliente, shippingOption, paymentMethod? }
    *   items: [{ id, nome, preco, unidade, image, qty }]
@@ -82,10 +91,15 @@
     txt += L + '\n';
     pedido.items.forEach((i, idx) => {
       const sub = i.preco * i.qty;
+      const qtdPorPacote = extrairQtdPorPacote(i.unidade);
+      const totalBotoes = i.qty * qtdPorPacote;
       txt += `${idx + 1}. ${i.nome}\n`;
-      txt += `   Unidade:        ${i.unidade || '-'}\n`;
-      txt += `   Quantidade:     ${i.qty}\n`;
-      txt += `   Preço unitário: ${formatBRL(i.preco)}\n`;
+      txt += `   Pacote:         ${i.unidade || '-'}\n`;
+      txt += `   Qtd pacotes:    ${i.qty}\n`;
+      if (qtdPorPacote > 1) {
+        txt += `   Total botões:   ${i.qty} × ${qtdPorPacote} = ${totalBotoes} botões\n`;
+      }
+      txt += `   Preço unitário: ${formatBRL(i.preco)} /pacote\n`;
       txt += `   Subtotal:       ${formatBRL(sub)}\n\n`;
     });
 
@@ -235,7 +249,13 @@
 
     msg += `🛒 *ITENS*\n`;
     pedido.items.forEach((i, idx) => {
-      msg += `${idx+1}. ${i.qty}x ${i.nome} (${i.unidade})\n   ${formatBRL(i.preco * i.qty)}\n`;
+      const qtdPorPacote = extrairQtdPorPacote(i.unidade);
+      const totalBotoes = i.qty * qtdPorPacote;
+      msg += `${idx+1}. ${i.qty}× ${i.nome} (${i.unidade})\n   ${formatBRL(i.preco * i.qty)}`;
+      if (qtdPorPacote > 1) {
+        msg += `\n   📦 ${i.qty} pacote${i.qty > 1 ? 's' : ''} × ${qtdPorPacote} = ${totalBotoes} botões`;
+      }
+      msg += `\n`;
     });
     msg += `\n`;
 

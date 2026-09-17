@@ -435,12 +435,19 @@
         }
         cont.innerHTML = pedidos.map(p => {
           const isRetirada = p.shippingOption?.retirada;
-          const itens = (p.items || []).map(i => `
+          const itens = (p.items || []).map(i => {
+            const qtdPorPacote = (function(unid) {
+              const m = String(unid || '').match(/(\d+)\s*unidades?/i);
+              return m ? parseInt(m[1], 10) : 1;
+            })(i.unidade);
+            const totalBotoes = i.qty * qtdPorPacote;
+            return `
             <li>
-              <span>${i.qty}× ${escapeHTML(i.nome)}</span>
+              <span>${i.qty}× ${escapeHTML(i.nome)}${qtdPorPacote > 1 ? `<br><small style="color:#888;">📦 ${i.qty} pacote${i.qty > 1 ? 's' : ''} × ${qtdPorPacote} = ${totalBotoes} botões</small>` : ''}</span>
               <strong>${formatBRL(i.preco * i.qty)}</strong>
             </li>
-          `).join('');
+          `;
+          }).join('');
           const statusClass = isRetirada ? 'retirada' : '';
           const statusText = isRetirada ? '🏠 Retirar no local' : '📦 Enviar por Correios';
           const origem = p.salvoEm ? (p.salvoEm.includes('T') ? '☁️' : '💾') : '💾';

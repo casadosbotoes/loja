@@ -51,6 +51,17 @@
     return cart.find(i => i.id === id);
   }
 
+  // Extrai a quantidade de unidades por pacote do campo "unidade"
+  // Ex: "pacote com 6 unidades" → 6
+  //     "pacote com 12 unidades" → 12
+  //     "unidade" → 1
+  function extrairQtdPorPacote(unidadeStr) {
+    if (!unidadeStr) return 1;
+    const m = String(unidadeStr).match(/(\d+)\s*unidades?/i);
+    if (m) return parseInt(m[1], 10);
+    return 1;
+  }
+
   /* ---------- API pública ---------- */
   function add(id, qty) {
     qty = parseInt(qty, 10) || 1;
@@ -160,6 +171,10 @@
     body.innerHTML = cart.map(item => {
       // Suporta products com images[] (galeria) e legados com image
       const img = (item.images && item.images[0]) || item.image || '';
+      // Quantidade por pacote (extraída do campo "unidade")
+      const qtdPorPacote = extrairQtdPorPacote(item.unidade);
+      const totalBotoes = item.qty * qtdPorPacote;
+      const temPacote = qtdPorPacote > 1;
       return `
       <div class="cart-item" data-id="${item.id}">
         <div class="cart-item-img">
@@ -171,10 +186,12 @@
           <span class="cart-item-unid">${escapeHTML(item.unidade)}</span>
           <span class="cart-item-price">R$ ${(item.preco * item.qty).toFixed(2).replace('.', ',')}</span>
           <div class="qty-control">
+            <span class="qty-label">Pacotes:</span>
             <button class="qty-btn" data-action="dec">−</button>
             <span class="qty-val">${item.qty}</span>
             <button class="qty-btn" data-action="inc">+</button>
           </div>
+          ${temPacote ? `<span class="cart-item-total-botoes">${item.qty} pacote${item.qty > 1 ? 's' : ''} × ${qtdPorPacote} = <strong>${totalBotoes} botões</strong></span>` : ''}
           <button class="cart-item-remove" data-action="remove">Remover</button>
         </div>
         <div></div>
