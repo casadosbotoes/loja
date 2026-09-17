@@ -43,13 +43,13 @@ window.CDB_PRODUCTS = [
     preco: 1.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 240,
     descricao: "Botão na cor amarelo claro fosco, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Amarelo Claro Fosco",
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 240 unidades",
     ],
     images: [
       "botao-de-acrilico-amarelo-claro-fosco-15mm-1.webp",
@@ -64,13 +64,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 82,
     descricao: "Botão na cor areia, tamanho 17mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Areia",
       "Tamanho: 17mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 82 unidades",
     ],
     images: [
       "botao-de-acrilico-areia-17mm-1.webp",
@@ -85,13 +85,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 228,
     descricao: "Botão na cor vermelho fosco, tamanho 14mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Vermelho Fosco",
       "Tamanho: 14mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 228 unidades",
     ],
     images: [
       "botao-de-acrilico-vermelho-fosco-14mm-1.webp",
@@ -106,13 +106,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 638,
     descricao: "Botão na cor vinho fosco, tamanho 14mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Vinho Fosco",
       "Tamanho: 14mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 638 unidades",
     ],
     images: [
       "botao-de-acrilico-vinho-fosco-14mm-1.webp",
@@ -127,13 +127,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 966,
     descricao: "Botão na cor roxo azulado, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Roxo Azulado",
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 966 unidades",
     ],
     images: [
       "botao-de-acrilico-roxo-azulado-15mm-1.webp",
@@ -148,13 +148,13 @@ window.CDB_PRODUCTS = [
     preco: 3.50,
     unidade: "pacote com 10 unidades",
     quantidade: 10,
+    estoque: 762,
     descricao: "Botão na cor furta cor, tamanho 11mm, vendido em pacote com 10 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Furta Cor",
       "Tamanho: 11mm",
       "Conteúdo: Pacote Com 10 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 762 unidades",
     ],
     images: [
       "botao-de-acrilico-furta-cor-11mm-1.webp",
@@ -169,13 +169,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 494,
     descricao: "Botão na cor rosa bebe fosco, tamanho 17mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Rosa Bebe Fosco",
       "Tamanho: 17mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 494 unidades",
     ],
     images: [
       "botao-de-acrilico-rosa-bebe-fosco-17mm-1.webp",
@@ -190,13 +190,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 922,
     descricao: "Botão na cor branco mesclado fosco, tamanho 22mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Branco Mesclado Fosco",
       "Tamanho: 22mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 922 unidades",
     ],
     images: [
       "botao-de-acrilico-branco-mesclado-fosc-22mm-1.webp",
@@ -211,13 +211,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 965,
     descricao: "Botão na cor preto mesclado brilhante, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Preto Mesclado Brilhante",
       "Tamanho: 20mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 965 unidades",
     ],
     images: [
       "botao-de-acrilico-preto-mesclado-brilh-20mm-1.webp",
@@ -232,13 +232,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 1324,
     descricao: "Botão na cor branco-bege mesclado dupla face, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Branco-Bege Mesclado Dupla Face",
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 1324 unidades",
     ],
     images: [
       "botao-de-acrilico-fosco-dupla-face-branco-bege-mesclado-15mm-1.webp",
@@ -254,6 +254,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor marrom areia, tamanho 18mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Marrom Areia",
@@ -274,6 +275,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor preto mesclado, tamanho 25mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Preto Mesclado",
@@ -294,6 +296,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor preto brilhante, tamanho 17mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Preto Brilhante",
@@ -314,6 +317,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor branco, tamanho 17mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Branco",
@@ -334,13 +338,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 478,
     descricao: "Botão na cor marron areia, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Marron Areia",
       "Tamanho: 20mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 478 unidades",
     ],
     images: [
       "botao-acrilico-fosco-marron-areia-20mm-1.webp",
@@ -355,13 +359,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 979,
     descricao: "Botão na cor branco furta cor, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Branco Furta Cor",
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 979 unidades",
     ],
     images: [
       "botao-acrilico-brilhante-branco-furta-cor-15mm-1.webp",
@@ -376,13 +380,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 167,
     descricao: "Botão na cor rajado e branco, tamanho 20mm HORIZONTAL 16 MM VERTICAL, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Rajado E Branco",
       "Tamanho: 20mm HORIZONTAL 16 MM VERTICAL",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 167 unidades",
     ],
     images: [
       "botao-acrilico-brilhante-dupla-face-rajado-e-branco-20mm-hor-1.webp",
@@ -398,6 +402,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor bege mesclado com marrom off white, tamanho 22mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Bege Mesclado Com Marrom Off White",
@@ -418,6 +423,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor mesclado claro, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Mesclado Claro",
@@ -438,13 +444,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 537,
     descricao: "Botão na cor marrom mesclado, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Marrom Mesclado",
       "Tamanho: 20mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 537 unidades",
     ],
     images: [
       "botao-acrilico-brilhante-marrom-mesclado-20mm-1.webp",
@@ -459,6 +465,7 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 9999,
     descricao: "Botão na cor marrom mesclado com veias, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Marrom Mesclado Com Veias",
@@ -479,13 +486,13 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 6,
     descricao: "Botão na cor dourado, tamanho 20mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 20mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 6 unidades",
     ],
     images: [
       "botao-plastico-dourado-20mm-1.webp",
@@ -502,13 +509,13 @@ window.CDB_PRODUCTS = [
     preco: 22.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 6,
     descricao: "Botão na cor dourado, tamanho 19mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 19mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 6 unidades",
     ],
     images: [
       "botao-plastico-dourado-19mm-1.webp",
@@ -525,12 +532,12 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão artesanal, tamanho 17mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Tamanho: 17mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Madreperola",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-madreperola-17mm-1.webp",
@@ -546,13 +553,13 @@ window.CDB_PRODUCTS = [
     preco: 16.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 18mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 18mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-dourado-18mm-1.webp",
@@ -568,13 +575,13 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 23mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 23mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-durado-23mm-1.webp",
@@ -591,13 +598,13 @@ window.CDB_PRODUCTS = [
     preco: 18.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-dourado-15mm-1.webp",
@@ -614,12 +621,12 @@ window.CDB_PRODUCTS = [
     preco: 15.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 18,
     descricao: "Botão artesanal, tamanho 15mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Tamanho: 15mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 18 unidades",
     ],
     images: [
       "botao-plastico-15mm-1.webp",
@@ -635,13 +642,13 @@ window.CDB_PRODUCTS = [
     preco: 24.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 25mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 25mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-dourado-25mm-1.webp",
@@ -658,13 +665,13 @@ window.CDB_PRODUCTS = [
     preco: 7.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 460,
     descricao: "Botão na cor mesclado, tamanho 25mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Mesclado",
       "Tamanho: 25mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Acrilico",
-      "Estoque disponível: 460 unidades",
     ],
     images: [
       "botao-acrilico-fosco-mesclado-25mm-1.webp",
@@ -679,13 +686,13 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor preto, tamanho 25mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Preto",
       "Tamanho: 25mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-preto-25mm-1.webp",
@@ -701,13 +708,13 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 22mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 22mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-dourado-22mm-1.webp",
@@ -724,13 +731,13 @@ window.CDB_PRODUCTS = [
     preco: 16.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 6,
     descricao: "Botão na cor preto, tamanho 22mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Preto",
       "Tamanho: 22mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 6 unidades",
     ],
     images: [
       "botao-de-plastico-preto-22mm-1.webp",
@@ -746,13 +753,13 @@ window.CDB_PRODUCTS = [
     preco: 20.00,
     unidade: "pacote com 6 unidades",
     quantidade: 6,
+    estoque: 12,
     descricao: "Botão na cor dourado, tamanho 21mm, vendido em pacote com 6 unidades, para seus projetos de costura e artesanato.",
     detalhes: [
       "Cor: Dourado",
       "Tamanho: 21mm",
       "Conteúdo: Pacote Com 6 Unidades",
       "Categoria: Plastico",
-      "Estoque disponível: 12 unidades",
     ],
     images: [
       "botao-plastico-dourado-21mm-1.webp",

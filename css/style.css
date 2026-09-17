@@ -1107,6 +1107,33 @@ ul { list-style: none; }
   color: #fff;
 }
 
+/* Badges de estoque */
+.product-badge.badge-estoque {
+  background: #2e7d32;
+  color: #fff;
+}
+.product-badge.badge-pouco {
+  background: #f57c00;
+  color: #fff;
+  animation: pulse-low-stock 1.5s ease-in-out infinite;
+}
+.product-badge.badge-esgotado {
+  background: #c62828;
+  color: #fff;
+}
+@keyframes pulse-low-stock {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Card de produto esgotado */
+.product-card.esgotado {
+  opacity: 0.75;
+}
+.product-card.esgotado .product-img img {
+  filter: grayscale(0.5);
+}
+
 /* ---------- Checkout ---------- */
 .checkout-step { display: none; }
 .checkout-step.active { display: block; }

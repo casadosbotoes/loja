@@ -179,6 +179,13 @@ window.CDB_CONFIG = {
     binId: "6aab29c4ffd5d160530ffdaa",
   },
 
+  /* ---------- Estoque ---------- */
+  // Bin separado para controle de estoque (sincronizado na nuvem)
+  // Decrementa automaticamente quando um pedido é confirmado
+  estoque: {
+    binId: "6aac2556ac6210605ad9586c",
+  },
+
   /* ---------- Frete grátis ---------- */
   freteGratis: {
     ativo: true,

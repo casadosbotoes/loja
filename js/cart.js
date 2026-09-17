@@ -56,6 +56,24 @@
     qty = parseInt(qty, 10) || 1;
     const p = getProduct(id);
     if (!p) return;
+
+    // Valida estoque antes de adicionar
+    if (global.CDBEstoque) {
+      const estoqueAtual = global.CDBEstoque.getEstoque(id);
+      const noCarrinho = findItem(id) ? findItem(id).qty : 0;
+      const novoTotal = noCarrinho + qty;
+      if (novoTotal > estoqueAtual) {
+        if (estoqueAtual === 0) {
+          showToast(`❌ "${p.nome}" está esgotado!`);
+        } else if (noCarrinho >= estoqueAtual) {
+          showToast(`⚠ Você já adicionou todo o estoque de "${p.nome}" (${estoqueAtual})`);
+        } else {
+          showToast(`⚠ Estoque insuficiente! Só tem ${estoqueAtual} de "${p.nome}"`);
+        }
+        return; // bloqueia adicionar
+      }
+    }
+
     let item = findItem(id);
     if (item) {
       item.qty += qty;
@@ -84,6 +102,16 @@
 
   function setQty(id, qty) {
     qty = parseInt(qty, 10);
+    // Valida estoque ao aumentar quantidade
+    if (global.CDBEstoque && qty > 0) {
+      const estoqueAtual = global.CDBEstoque.getEstoque(id);
+      if (qty > estoqueAtual) {
+        const p = getProduct(id);
+        showToast(`⚠ Só tem ${estoqueAtual} de "${p?.nome || id}" em estoque`);
+        // Limita ao estoque máximo
+        qty = estoqueAtual;
+      }
+    }
     if (qty <= 0) {
       remove(id);
       return;

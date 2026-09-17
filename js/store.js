@@ -146,10 +146,31 @@
       const hasGaleria = imgs.length > 1;
       const galeriaBadges = hasGaleria ? `<span class="product-badge badge-galeria">📷 ${imgs.length} fotos</span>` : '';
 
+      // Estoque: mostra no badge e desabilita botão se esgotado
+      let estoqueBadge = '';
+      let botaoCarrinho = '';
+      let cardEsgotado = '';
+      if (global.CDBEstoque && p.estoque !== undefined && p.estoque !== 9999) {
+        const atual = global.CDBEstoque.getEstoque(p.id);
+        if (atual === 0) {
+          estoqueBadge = '<span class="product-badge badge-esgotado">Esgotado</span>';
+          botaoCarrinho = '<button class="btn-add-cart" disabled style="opacity:0.5;cursor:not-allowed">Esgotado</button>';
+          cardEsgotado = 'esgotado';
+        } else if (atual <= 5) {
+          estoqueBadge = `<span class="product-badge badge-pouco">Restam ${atual}</span>`;
+          botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
+        } else {
+          estoqueBadge = `<span class="product-badge badge-estoque">${atual} em estoque</span>`;
+          botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
+        }
+      } else {
+        botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
+      }
+
       return `
-        <article class="product-card" data-id="${p.id}">
+        <article class="product-card ${cardEsgotado}" data-id="${p.id}">
           <div class="product-img" data-action="view">
-            <div class="product-badges">${badges.join('')}${galeriaBadges}</div>
+            <div class="product-badges">${badges.join('')}${galeriaBadges}${estoqueBadge}</div>
             <img src="images/products/${imgPrincipal}" alt="${escapeHTML(p.nome)}" loading="lazy"
                  onerror="this.onerror=null;this.src='images/products/${imgPrincipal.replace(/\.webp$/, '.jpg')}'">
           </div>
@@ -163,7 +184,7 @@
             </div>
           </div>
           <div class="product-actions">
-            <button class="btn-add-cart" data-action="add">+ Carrinho</button>
+            ${botaoCarrinho}
             <button class="btn-quick-view" data-action="view" aria-label="Ver detalhes">Detalhes</button>
           </div>
         </article>
@@ -391,6 +412,12 @@
     // Re-renderiza quando o carrinho muda (para atualizar contadores)
     global.addEventListener('cdb:cart-change', () => {
       // Não precisa re-renderizar os produtos, só o carrinho
+    });
+
+    // Re-renderiza quando o estoque muda (pedido confirmado, sincronização nuvem)
+    global.addEventListener('cdb:estoque-atualizado', () => {
+      console.log('[store] Re-renderizando produtos (estoque atualizado)');
+      renderProdutos();
     });
   }
 

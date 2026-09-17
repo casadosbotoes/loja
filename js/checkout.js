@@ -300,6 +300,14 @@
         throw new Error('Por favor, preencha o NÚMERO do endereço para entrega.');
       }
 
+      // Valida estoque de TODOS os itens antes de confirmar
+      if (global.CDBEstoque) {
+        const validacao = global.CDBEstoque.validarPedido(items);
+        if (!validacao.valido) {
+          throw new Error('Estoque insuficiente:\n\n' + validacao.erros.join('\n'));
+        }
+      }
+
       state.pedido = {
         numero, subtotal, frete: freteValor, total, items, cliente,
         shippingOption: state.shippingOption,
@@ -378,6 +386,19 @@
         }
       } catch (e) {
         console.warn('[checkout] erro ao sincronizar:', e);
+      }
+
+      // DECREMENTA ESTOQUE — após pedido confirmado, reduz do estoque
+      // Sincronizado na nuvem (todos os aparelhos veem o estoque atualizado)
+      try {
+        if (global.CDBEstoque) {
+          global.CDBEstoque.decrementarPedido(state.pedido.items);
+          console.log('[checkout] ✓ Estoque decrementado');
+          // Dispara evento para UI atualizar
+          global.dispatchEvent(new CustomEvent('cdb:estoque-atualizado'));
+        }
+      } catch (e) {
+        console.warn('[checkout] erro ao decrementar estoque:', e);
       }
 
       // Caminho por método de pagamento
