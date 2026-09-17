@@ -205,6 +205,7 @@ PAGAMENTO: ${opts.paymentMethod || '-'}
     };
 
     try {
+      console.log('[email] Enviando para Web3Forms...');
       const resp = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -213,12 +214,13 @@ PAGAMENTO: ${opts.paymentMethod || '-'}
         },
         body: JSON.stringify(body),
       });
+      console.log('[email] HTTP status:', resp.status);
       const data = await resp.json();
       if (data.success) {
-        console.log('[email] Pedido enviado por e-mail com sucesso!');
+        console.log('[email] ✅ E-mail enviado! Verifique casadebotao1@gmail.com');
         return { success: true, message_id: data.message_id };
       } else {
-        console.error('[email] Erro da Web3Forms:', data.message);
+        console.error('[email] ❌ Web3Forms rejeitou:', data.message);
         return { success: false, error: data.message };
       }
     } catch (err) {

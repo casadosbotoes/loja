@@ -355,6 +355,7 @@
   <script src="config.js"></script>
   <script src="js/orders-store.js"></script>
   <script src="js/sync.js"></script>
+  <script src="js/email.js"></script>
   <script>
     (function () {
       const $ = (id) => document.getElementById(id);
@@ -478,6 +479,7 @@
               <div class="pedido-acoes">
                 <button class="btn btn-outline btn-small" onclick="baixarPedido('${p.numero}')">📄 Baixar .txt</button>
                 <button class="btn btn-outline btn-small" onclick="enviarWhatsApp('${p.numero}')">📱 Abrir no WhatsApp</button>
+                <button class="btn btn-outline btn-small" onclick="reenviarEmail('${p.numero}')">📧 Reenviar e-mail</button>
                 <button class="btn btn-danger btn-small" onclick="removerPedido('${p.numero}')">🗑️ Remover</button>
               </div>
             </div>
@@ -535,6 +537,66 @@
         }
         atualizarTudo();
       };
+
+      // Reenvia o e-mail do pedido manualmente (caso não tenha chegado)
+      window.reenviarEmail = async function (numero) {
+        const pedido = pedidosExibidos.find(p => p.numero === numero)
+          || window.CDBOrders.listar().find(p => p.numero === numero);
+        if (!pedido) {
+          alert('Pedido não encontrado.');
+          return;
+        }
+        // Carrega o email.js dinamicamente se não estiver carregado
+        if (!window.CDBEmail) {
+          alert('Carregando módulo de e-mail...');
+          await carregarScript('js/email.js');
+          await new Promise(r => setTimeout(r, 500));
+        }
+        if (!window.CDBEmail) {
+          alert('Erro: módulo de e-mail não pôde ser carregado. Recarregue a página.');
+          return;
+        }
+        if (!confirm(`Reenviar e-mail do pedido ${numero} para casadebotao1@gmail.com?`)) return;
+        console.log('[pedidos] Reenviando e-mail do pedido', numero);
+        const btn = event?.target;
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '📧 Enviando...';
+        }
+        try {
+          const result = await window.CDBEmail.enviarPedido(pedido, {
+            paymentMethod: pedido.paymentMethod || 'pix',
+          });
+          if (result.success) {
+            alert('✅ E-mail enviado com sucesso! Verifique casadebotao1@gmail.com (incluindo Spam e Promoções).');
+            console.log('[pedidos] ✅ E-mail reenviado com sucesso');
+          } else if (result.reason === 'desativado') {
+            alert('❌ E-mail está desativado no config.js. Não é possível reenviar.');
+          } else {
+            alert('❌ Falha ao enviar: ' + (result.error || 'erro desconhecido'));
+            console.error('[pedidos] Falha:', result);
+          }
+        } catch (err) {
+          alert('❌ Erro: ' + err.message);
+          console.error('[pedidos] Erro:', err);
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📧 Reenviar e-mail';
+          }
+        }
+      };
+
+      // Helper para carregar script dinamicamente
+      function carregarScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
 
       function gerarTxtPedido(p) {
         // Reusa o conteúdo do .txt original se existir
