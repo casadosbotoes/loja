@@ -129,7 +129,7 @@ window.CDB_CONFIG = {
     valor: 0, // grátis
     prazo: "Combinar com a loja",
     endereco: {
-      rua: "Rua Visconde de Inhaúma, 580 - Sala 409",
+      rua: "Rua Visconde de Inhaúma, 580 - Salas 409 e 410",
       bairro: "Centro",
       cidade: "Ribeirão Preto",
       uf: "SP",
