@@ -20,8 +20,8 @@ window.CDB_CONFIG = {
   /* ---------- Contato / WhatsApp ---------- */
   whatsapp: {
     // Número do WhatsApp da loja em formato internacional, só dígitos
-    // Formato: 55 + DDD + número (ex: 55 16 99184-2936 → "5516991842936")
-    numero: "5516991842936",
+    // Formato: 55 + DDD + número (ex: 55 16 98264-0126 → "5516982640126")
+    numero: "5516982640126",
     mensagemPadrao: "Olá! Tenho interesse em produtos da Casa dos Botões.",
   },
 
@@ -32,8 +32,8 @@ window.CDB_CONFIG = {
   pix: {
     // Chave Pix da loja (telefone) — formato: 55 + DDD + número (só dígitos)
     // O BR Code gera o QR Code no padrão EMV do Banco Central usando
-    // "+5516991842936" como chave no QR Code.
-    chave: "5516991842936",
+    // "+5516982640126" como chave no QR Code.
+    chave: "5516982640126",
     tipoChave: "phone", // "cpf" | "cnpj" | "email" | "phone" | "random"
     // [PREENCHER] Nome do recebedor conforme está no banco (até 25 chars, sem acento)
     nomeRecebedor: "CASA DOS BOTOES",
