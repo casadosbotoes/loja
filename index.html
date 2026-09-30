@@ -325,6 +325,16 @@
             </div>
           </div>
           <div class="form-row">
+            <div class="form-group">
+              <label for="ck-email">E-mail *</label>
+              <input type="email" id="ck-email" placeholder="seu@email.com" autocomplete="email">
+            </div>
+            <div class="form-group form-group-small">
+              <label for="ck-cpf">CPF/CNPJ *</label>
+              <input type="text" id="ck-cpf" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off">
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group form-group-cep">
               <label for="ck-cep">CEP *</label>
               <input type="text" id="ck-cep" placeholder="00000-000" maxlength="9" inputmode="numeric" autocomplete="postal-code">
@@ -425,8 +435,10 @@
 
   <!-- ====== Scripts ====== -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" defer></script>
-  <script src="config.js"></script>
-  <script src="products.js"></script>
+  <!-- SDK oficial do Mercado Pago (tokeniza cartão no navegador, sem tocar nosso servidor) -->
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script src="config.js" defer></script>
+  <script src="products.js" defer></script>
   <script src="js/pix.js" defer></script>
   <script src="js/cart.js" defer></script>
   <script src="js/shipping.js" defer></script>

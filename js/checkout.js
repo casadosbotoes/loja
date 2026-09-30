@@ -34,6 +34,12 @@
     paymentMethod: null,   // 'pix' | 'cartao' | 'whatsapp'
     pedido: null,          // { numero, total, items, cliente, frete }
     pixData: null,         // { brcode, qrUrl } retornado pelo MP ou gerado localmente
+    // Checkout transparente (cartão no site):
+    cardData: null,        // { cardNumber, cardExpirationMonth, cardExpirationYear, securityCode, cardholderName, identificationType, identificationNumber }
+    installments: [],      // [{ installments, installmentAmount, label, ... }]
+    selectedInstallment: null, // { installments, installmentAmount, ... }
+    paymentMethodId: null, // 'visa' | 'master' | 'elo' | 'amex' | 'hipercard' detectado do BIN
+    issuerId: null,        // banco emissor (opcional)
   };
 
   /* ---------- Helpers ---------- */
@@ -55,6 +61,12 @@
     state.shippingResults = [];
     state.paymentMethod = null;
     state.pixData = null;
+    state.cardData = null;
+    state.installments = [];
+    state.selectedInstallment = null;
+    state.paymentMethodId = null;
+    state.issuerId = null;
+    state.pedido = null;
     renderPaymentMethods();
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
@@ -229,16 +241,19 @@
     const metodos = global.CDB_CONFIG?.checkout?.metodos || ['pix', 'cartao', 'whatsapp'];
     const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
     const mpDisponivel = (mpCfg.accessToken && mpCfg.accessToken.length > 20) || (mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+    const transparenteAtivo = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
 
     const cards = [];
     for (const m of metodos) {
       if (m === 'pix') {
         cards.push({ id: 'pix', nome: 'Pix', desc: 'QR Code na hora, 100% seguro' });
       } else if (m === 'cartao' && mpDisponivel) {
-        cards.push({ id: 'cartao', nome: 'Cartão', desc: 'Crédito/Débito via Mercado Pago — até 12x' });
+        const desc = transparenteAtivo
+          ? 'Pague no próprio site com cartão de crédito — até ' + (mpCfg.maxParcelas || 12) + 'x'
+          : 'Crédito/Débito via Mercado Pago — até 12x';
+        cards.push({ id: 'cartao', nome: 'Cartão', desc });
       } else if (m === 'cartao' && !mpDisponivel) {
-        // sem worker MP, cartão fica oculto
-        continue;
+        continue; // sem MP, cartão fica oculto
       } else if (m === 'pix-mp' && mpDisponivel) {
         cards.push({ id: 'pix-mp', nome: 'Pix Mercado Pago', desc: 'Protegido pelo MP' });
       } else if (m === 'whatsapp') {
@@ -279,12 +294,26 @@
         <span class="hint">Pagamento confirmado em até 24h em dias úteis.</span>`;
       confirmBtn.textContent = 'Confirmar e gerar QR Code';
       confirmBtn.disabled = false;
-    } else if (state.paymentMethod === 'pix-mp' || state.paymentMethod === 'cartao') {
-      const tipo = state.paymentMethod === 'cartao' ? 'cartão' : 'Pix';
+    } else if (state.paymentMethod === 'cartao') {
+      const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
+      const transparente = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+      if (transparente) {
+        cont.innerHTML = renderCardForm();
+        confirmBtn.textContent = 'Pagar com cartão';
+        confirmBtn.disabled = false;
+        initCardFormHandlers();
+      } else {
+        cont.innerHTML = `
+          <p><strong>Cartão via Mercado Pago Checkout Pro:</strong> ao confirmar, você será redirecionado para a página oficial do Mercado Pago, onde o pagamento é processado de forma segura.</p>
+          <span class="hint">Compra protegida pelo Mercado Pago.</span>`;
+        confirmBtn.textContent = 'Confirmar e ir para o Mercado Pago';
+        confirmBtn.disabled = false;
+      }
+    } else if (state.paymentMethod === 'pix-mp') {
       cont.innerHTML = `
-        <p><strong>${escapeHTML(tipo)} via Mercado Pago:</strong> ao confirmar, você será redirecionado para a página oficial do Mercado Pago, onde o pagamento é processado de forma segura.</p>
+        <p><strong>Pix via Mercado Pago:</strong> ao confirmar, geraremos um QR Code Pix dinâmico pelo MP. Protegido pelo Mercado Pago.</p>
         <span class="hint">Compra protegida pelo Mercado Pago.</span>`;
-      confirmBtn.textContent = 'Confirmar e ir para o Mercado Pago';
+      confirmBtn.textContent = 'Confirmar e gerar Pix MP';
       confirmBtn.disabled = false;
     } else if (state.paymentMethod === 'whatsapp') {
       cont.innerHTML = `
@@ -438,12 +467,23 @@
       if (state.paymentMethod === 'pix') {
         // Gera QR Code Pix localmente (sem MP)
         await gerarPixLocal(numero, total);
-      } else if (state.paymentMethod === 'pix-mp' || state.paymentMethod === 'cartao') {
-        // Chama o Cloudflare Worker que cria a preferência no MP
-        await criarPreferenciaMP();
-        return; // redireciona o navegador, não mostra step 3
+      } else if (state.paymentMethod === 'cartao') {
+        const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
+        const transparente = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+        if (transparente) {
+          // Checkout transparente: processa o pagamento via Worker
+          await processarPagamentoCartao();
+          return; // já mostra tela de confirmação
+        } else {
+          // Fallback: Checkout Pro (redireciona)
+          await criarPreferenciaMP();
+          return;
+        }
+      } else if (state.paymentMethod === 'pix-mp') {
+        // Pix MP dinâmico (via Worker) — cria preferência/pagamento
+        await criarPixMP();
+        return;
       } else if (state.paymentMethod === 'whatsapp') {
-        // Abre WhatsApp com resumo do pedido
         abrirWhatsappComPedido();
         return;
       }
@@ -593,6 +633,556 @@
     return `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
   }
 
+  /* ============================================================
+   * CHECKOUT TRANSPARENTE — Cartão no próprio site
+   * ============================================================ */
+
+  /* ---------- Renderiza o form de cartão ---------- */
+  function renderCardForm() {
+    return `
+      <div class="card-form">
+        <p class="card-form-info">
+          🔒 <strong>Pagamento seguro via Mercado Pago.</strong> Seus dados de cartão são
+          tokenizados no próprio navegador e nunca passam pelo nosso servidor.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group form-group-card-num">
+            <label for="ck-card-number">Número do cartão *</label>
+            <div class="card-input-wrapper">
+              <input type="text" id="ck-card-number" placeholder="0000 0000 0000 0000"
+                     inputmode="numeric" autocomplete="cc-number" maxlength="23">
+              <span class="card-brand-badge" id="ck-card-brand"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ck-card-name">Nome impresso no cartão *</label>
+            <input type="text" id="ck-card-name" placeholder="Como está no cartão"
+                   autocomplete="cc-name" style="text-transform:uppercase">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group form-group-small">
+            <label for="ck-card-expiry">Validade *</label>
+            <input type="text" id="ck-card-expiry" placeholder="MM/AA"
+                   inputmode="numeric" autocomplete="cc-exp" maxlength="5">
+          </div>
+          <div class="form-group form-group-small">
+            <label for="ck-card-cvv">CVV *</label>
+            <input type="text" id="ck-card-cvv" placeholder="123"
+                   inputmode="numeric" autocomplete="cc-csc" maxlength="4">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ck-card-installments">Parcelas *</label>
+            <select id="ck-card-installments" disabled>
+              <option value="">Digite o número do cartão</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card-form-summary" id="cardFormSummary"></div>
+      </div>
+    `;
+  }
+
+  /* ---------- Handlers do form de cartão ---------- */
+  function initCardFormHandlers() {
+    const cardNumber = $('ck-card-number');
+    const cardName = $('ck-card-name');
+    const cardExpiry = $('ck-card-expiry');
+    const cardCvv = $('ck-card-cvv');
+    const installmentsSel = $('ck-card-installments');
+    const summary = $('cardFormSummary');
+
+    if (!cardNumber) return;
+
+    // Formata número do cartão: 0000 0000 0000 0000
+    cardNumber.addEventListener('input', async (e) => {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 19);
+      v = v.replace(/(.{4})/g, '$1 ').trim();
+      e.target.value = v;
+
+      // Detecta bandeira quando tiver 6+ dígitos
+      const digits = v.replace(/\s/g, '');
+      const brandEl = $('ck-card-brand');
+      if (digits.length >= 6) {
+        const brand = detectarBandeira(digits);
+        if (brandEl) {
+          brandEl.textContent = brand ? brand.toUpperCase() : '';
+          brandEl.className = 'card-brand-badge' + (brand ? ' brand-' + brand : '');
+        }
+        state.paymentMethodId = brand;
+        // Busca parcelas via SDK do MP
+        await buscarEAtualizarParcelas(digits);
+      } else {
+        if (brandEl) {
+          brandEl.textContent = '';
+          brandEl.className = 'card-brand-badge';
+        }
+        state.paymentMethodId = null;
+        state.installments = [];
+        state.selectedInstallment = null;
+        if (installmentsSel) {
+          installmentsSel.innerHTML = '<option value="">Digite o número do cartão</option>';
+          installmentsSel.disabled = true;
+        }
+      }
+    });
+
+    // Nome em maiúsculas
+    if (cardName) {
+      cardName.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase();
+      });
+    }
+
+    // Validade MM/AA
+    if (cardExpiry) {
+      cardExpiry.addEventListener('input', (e) => {
+        let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+        if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+        e.target.value = v;
+      });
+    }
+
+    // CVV
+    if (cardCvv) {
+      cardCvv.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+      });
+    }
+
+    // Seleção de parcela
+    if (installmentsSel) {
+      installmentsSel.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.value, 10);
+        if (!isNaN(idx) && state.installments[idx]) {
+          state.selectedInstallment = state.installments[idx];
+          if (summary) {
+            summary.innerHTML = `
+              <div class="card-summary-line">
+                <span>${state.selectedInstallment.installments}x de</span>
+                <strong>${formatBRL(state.selectedInstallment.installmentAmount)}</strong>
+              </div>
+              <div class="card-summary-line card-summary-total">
+                <span>Total:</span>
+                <strong>${formatBRL(state.selectedInstallment.totalAmount)}</strong>
+              </div>
+            `;
+          }
+        } else {
+          state.selectedInstallment = null;
+          if (summary) summary.innerHTML = '';
+        }
+      });
+    }
+  }
+
+  /* ---------- Detecta bandeira por BIN (heurística simples) ---------- */
+  // Não substitui a validação oficial do MP (feita via SDK getInstallments).
+  function detectarBandeira(digits) {
+    if (digits.length < 1) return null;
+    const d = digits;
+    // Visa: começa com 4
+    if (d[0] === '4') return 'visa';
+    // Master: 51-55 ou 2221-2720
+    if (/^5[1-5]/.test(d)) return 'master';
+    if (/^2(2[2-9]|[3-6][0-9]|7[01]|720)/.test(d.slice(0, 4))) return 'master';
+    // Amex: 34 ou 37
+    if (/^3[47]/.test(d)) return 'amex';
+    // Elo: vários ranges (heurística aproximada)
+    if (/^(4011|4312|4389|4514|4576|5041|5066|5067|509|6277|6362|6363|650|6516|6550)/.test(d)) return 'elo';
+    // Hipercard: 6062
+    if (/^6062/.test(d)) return 'hipercard';
+    return null;
+  }
+
+  /* ---------- Busca parcelas via SDK do MP ---------- */
+  async function buscarEAtualizarParcelas(cardDigits) {
+    const installmentsSel = $('ck-card-installments');
+    if (!installmentsSel) return;
+
+    // Calcula total do pedido
+    const subtotal = global.CDBCart ? global.CDBCart.subtotal() : 0;
+    const frete = state.shippingOption ? state.shippingOption.valor : 0;
+    const cfg = global.CDB_CONFIG || {};
+    const freteGratis = cfg.freteGratis?.ativo && subtotal >= cfg.freteGratis.valorMinimo;
+    const total = subtotal + (freteGratis ? 0 : frete);
+
+    const bin = cardDigits.slice(0, 6);
+    if (bin.length < 6) return;
+
+    installmentsSel.disabled = true;
+    installmentsSel.innerHTML = '<option value="">Carregando parcelas...</option>';
+
+    try {
+      if (!global.CDBMercadoPago) throw new Error('Módulo MP não carregou');
+      const maxParcelas = (global.CDB_CONFIG?.mercadoPago?.maxParcelas) || 12;
+      const todas = await global.CDBMercadoPago.getInstallments(bin, total);
+      // Filtra pelo máximo configurado
+      state.installments = todas.filter(p => p.installments <= maxParcelas);
+
+      if (state.installments.length === 0) {
+        installmentsSel.innerHTML = '<option value="">Nenhuma parcela disponível</option>';
+        return;
+      }
+
+      // Marca opção recomendada (1x sem juros normalmente)
+      installmentsSel.innerHTML = state.installments.map((p, i) => {
+        const isRecommended = (p.labels || []).includes('recommended');
+        const sel = isRecommended ? ' selected' : '';
+        return `<option value="${i}"${sel}>${escapeHTML(p.label)}</option>`;
+      }).join('');
+      installmentsSel.disabled = false;
+
+      // Pré-seleciona a recomendada
+      const recommendedIdx = state.installments.findIndex(p => (p.labels || []).includes('recommended'));
+      const defaultIdx = recommendedIdx >= 0 ? recommendedIdx : 0;
+      installmentsSel.value = String(defaultIdx);
+      state.selectedInstallment = state.installments[defaultIdx];
+
+      const summary = $('cardFormSummary');
+      if (summary && state.selectedInstallment) {
+        summary.innerHTML = `
+          <div class="card-summary-line">
+            <span>${state.selectedInstallment.installments}x de</span>
+            <strong>${formatBRL(state.selectedInstallment.installmentAmount)}</strong>
+          </div>
+          <div class="card-summary-line card-summary-total">
+            <span>Total:</span>
+            <strong>${formatBRL(state.selectedInstallment.totalAmount)}</strong>
+          </div>
+        `;
+      }
+    } catch (err) {
+      console.warn('[checkout] erro ao buscar parcelas:', err);
+      installmentsSel.innerHTML = '<option value="">Erro ao carregar parcelas. Tente novamente.</option>';
+    }
+  }
+
+  /* ---------- Processa pagamento de cartão (transparente) ---------- */
+  async function processarPagamentoCartao() {
+    const confirmBtn = $('confirmOrder');
+    // 1. Lê e valida os dados do cartão
+    const cardNumber = $('ck-card-number')?.value.replace(/\D/g, '') || '';
+    const cardName = $('ck-card-name')?.value.trim() || '';
+    const cardExpiry = $('ck-card-expiry')?.value || '';
+    const cardCvv = $('ck-card-cvv')?.value || '';
+
+    if (!cardNumber || cardNumber.length < 13) {
+      throw new Error('Número do cartão inválido.');
+    }
+    if (!cardName || cardName.length < 3) {
+      throw new Error('Preencha o nome impresso no cartão.');
+    }
+    const expiryMatch = cardExpiry.match(/^(\d{2})\/(\d{2})$/);
+    if (!expiryMatch) {
+      throw new Error('Validade inválida. Use o formato MM/AA.');
+    }
+    const [, expMonth, expYear] = expiryMatch;
+    if (parseInt(expMonth, 10) < 1 || parseInt(expMonth, 10) > 12) {
+      throw new Error('Mês de validade inválido.');
+    }
+    // Verifica validade: ano atual + 20 (ex: 2025 -> "25")
+    const currentYear = String(new Date().getFullYear()).slice(2);
+    if (parseInt(expYear, 10) < parseInt(currentYear, 10) ||
+        (parseInt(expYear, 10) === parseInt(currentYear, 10) &&
+         parseInt(expMonth, 10) < new Date().getMonth() + 1)) {
+      throw new Error('Cartão vencido. Confira a validade.');
+    }
+    if (!cardCvv || cardCvv.length < 3) {
+      throw new Error('CVV inválido (mínimo 3 dígitos).');
+    }
+    if (!state.selectedInstallment) {
+      throw new Error('Selecione o número de parcelas.');
+    }
+    if (!state.paymentMethodId) {
+      throw new Error('Não foi possível identificar a bandeira do cartão.');
+    }
+
+    // Pega dados do cliente (CPF/email já validados em goToPayment)
+    const docValue = $('ck-cpf')?.value.replace(/\D/g, '') || '';
+    const identificationType = docValue.length === 11 ? 'CPF' :
+                               docValue.length === 14 ? 'CNPJ' : null;
+    if (!identificationType) {
+      throw new Error('CPF ou CNPJ inválido.');
+    }
+    const email = $('ck-email')?.value.trim() || '';
+
+    // 2. Tokeniza o cartão via SDK MP (no navegador, PCI compliant)
+    confirmBtn.textContent = 'Tokenizando cartão...';
+    confirmBtn.disabled = true;
+
+    const token = await global.CDBMercadoPago.criarCardToken({
+      cardNumber: cardNumber,
+      cardExpirationMonth: expMonth,
+      cardExpirationYear: '20' + expYear,
+      cardholderName: cardName,
+      securityCode: cardCvv,
+      identificationType: identificationType,
+      identificationNumber: docValue,
+    });
+    console.log('[checkout] ✓ Cartão tokenizado:', token.slice(0, 8) + '...');
+
+    // 3. Envia ao Worker que cria o pagamento no MP (com access token)
+    confirmBtn.textContent = 'Processando pagamento...';
+
+    const nomeParts = ($('ck-nome').value.trim() || 'Cliente').split(' ');
+    const firstName = nomeParts[0];
+    const lastName = nomeParts.slice(1).join(' ') || 'Cliente';
+    const telDigits = ($('ck-telefone').value || '').replace(/\D/g, '');
+
+    const paymentResult = await global.CDBMercadoPago.processPayment({
+      token: token,
+      paymentMethodId: state.paymentMethodId,
+      installments: state.selectedInstallment.installments,
+      issuerId: state.issuerId || undefined,
+      transactionAmount: state.selectedInstallment.totalAmount,
+      description: `Pedido ${state.pedido.numero} — Casa dos Botões`,
+      externalReference: state.pedido.numero,
+      payer: {
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        identificationType: identificationType,
+        identificationNumber: docValue,
+        phone: {
+          areaCode: telDigits.slice(0, 2) || '16',
+          number: Number(telDigits.slice(2, 12)) || 999999999,
+        },
+      },
+      items: state.pedido.items,
+      shippingOption: state.pedido.shippingOption,
+    });
+
+    console.log('[checkout] ✓ Pagamento processado:', paymentResult);
+
+    // 4. Atualiza o pedido com info do pagamento
+    if (state.pedido) {
+      state.pedido.mpPaymentId = paymentResult.paymentId;
+      state.pedido.mpStatus = paymentResult.status;
+      state.pedido.mpStatusDetail = paymentResult.statusDetail;
+    }
+    // Re-salva o pedido no histórico com status do pagamento
+    try {
+      if (global.CDBOrders && state.pedido) {
+        global.CDBOrders.atualizar(state.pedido.numero, {
+          mpPaymentId: paymentResult.paymentId,
+          mpStatus: paymentResult.status,
+          mpStatusDetail: paymentResult.statusDetail,
+        });
+      }
+    } catch (e) { console.warn('[checkout] erro ao atualizar histórico:', e); }
+
+    // 5. Mostra tela de confirmação com base no status
+    mostrarConfirmacaoCartao(paymentResult);
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Pagar com cartão';
+  }
+
+  /* ---------- Tela de confirmação para cartão ---------- */
+  function mostrarConfirmacaoCartao(result) {
+    const traducao = global.CDBMercadoPago.traduzirStatus(result.status, result.statusDetail);
+    const icon = traducao.classe === 'success' ? '✓' :
+                 traducao.classe === 'error' ? '✕' : '⏳';
+
+    $('confirmMsg').innerHTML = `
+      <div class="payment-result payment-result-${traducao.classe}">
+        <div class="payment-result-icon">${icon}</div>
+        <h4>${escapeHTML(traducao.title)}</h4>
+        <p>${escapeHTML(traducao.msg)}</p>
+        ${result.paymentId ? `<p class="payment-result-id">ID transação: <strong>${escapeHTML(String(result.paymentId))}</strong></p>` : ''}
+        <p class="payment-result-pedido">Pedido: <strong>${escapeHTML(state.pedido.numero)}</strong> — ${formatBRL(state.pedido.total)}</p>
+      </div>
+      <p style="font-size:0.88rem;color:var(--c-texto-claro);margin-top:8px">
+        📄 O arquivo <strong>pedido-${escapeHTML(state.pedido.numero)}.txt</strong> com todos os seus dados foi baixado.
+        ${traducao.classe === 'success'
+          ? 'Anexe no WhatsApp para combinarmos o envio.'
+          : 'Chame a gente no WhatsApp para resolvermos.'}
+      </p>
+    `;
+
+    // Configura botão WhatsApp
+    const sendBtn = $('sendOrderWhatsapp');
+    if (sendBtn) sendBtn.href = montarLinkWhatsapp();
+
+    // Área extra do QR / botões
+    $('pixQrArea').innerHTML = `
+      <button class="btn btn-outline btn-block" id="baixarTxtBtn2" type="button" style="margin-top:12px">📄 Baixar pedido .txt novamente</button>
+    `;
+    const baixarBtn = $('baixarTxtBtn2');
+    if (baixarBtn) baixarBtn.addEventListener('click', () => {
+      if (global.CDBOrderTxt && state.pedido) {
+        global.CDBOrderTxt.baixarTxtPedido(state.pedido, {
+          paymentMethod: state.paymentMethod,
+          status: state.pedido.mpStatus || 'AGUARDANDO',
+        });
+      }
+    });
+
+    goToStep('confirm');
+  }
+
+  /* ---------- Cria Pix MP dinâmico (via Worker) ---------- */
+  async function criarPixMP() {
+    if (!global.CDBMercadoPago) throw new Error('Módulo MP não carregou');
+    const result = await global.CDBMercadoPago.criarPreferencia(state.pedido, {
+      paymentMethod: 'pix-mp',
+    });
+    if (!result.qr_code) {
+      throw new Error('Não foi possível gerar o QR Code Pix via MP.');
+    }
+
+    // Render step 3 com QR Code do MP
+    const msg = `Pedido <strong>${escapeHTML(state.pedido.numero)}</strong> no valor de <strong>${formatBRL(state.pedido.total)}</strong> criado! Escaneie o QR Code abaixo com o app do seu banco para pagar via Pix (Mercado Pago).`;
+    $('confirmMsg').innerHTML = msg +
+      `<p style="font-size:0.88rem;color:var(--c-texto-claro);margin-top:8px"> 📄 O arquivo <strong>pedido-${escapeHTML(state.pedido.numero)}.txt</strong> foi baixado. Anexe no WhatsApp.</p>`;
+
+    let qrHtml = '';
+    if (result.qr_code_base64) {
+      // Imagem PNG base64 direto do MP
+      qrHtml = `<img src="data:image/png;base64,${result.qr_code_base64}" alt="QR Code Pix" width="240" height="240">`;
+    } else {
+      // Gera QR Code a partir da string usando a lib qrcode-generator
+      qrHtml = `<img src="${gerarQrCodeDataUrl(result.qr_code, 240)}" alt="QR Code Pix" width="240" height="240">`;
+    }
+
+    const qrArea = $('pixQrArea');
+    qrArea.innerHTML = `
+      <div class="pix-qr">
+        ${qrHtml}
+        <span class="pix-code" id="pixCodeText">${escapeHTML(result.qr_code)}</span>
+        <button class="pix-copy-btn" id="copyPixBtn" type="button">Copiar código Pix</button>
+      </div>
+      <button class="btn btn-outline btn-block" id="baixarTxtBtn" type="button" style="margin-top:12px">📄 Baixar pedido .txt novamente</button>`;
+
+    // Botão copiar
+    const copyBtn = $('copyPixBtn');
+    if (copyBtn) copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(result.qr_code).then(() => {
+        copyBtn.textContent = 'Código copiado!';
+        setTimeout(() => copyBtn.textContent = 'Copiar código Pix', 2000);
+      }).catch(() => {});
+    });
+
+    // Botão baixar txt
+    const baixarBtn = $('baixarTxtBtn');
+    if (baixarBtn) baixarBtn.addEventListener('click', () => {
+      if (global.CDBOrderTxt && state.pedido) {
+        global.CDBOrderTxt.baixarTxtPedido(state.pedido, {
+          paymentMethod: 'pix-mp',
+          status: 'AGUARDANDO CONFIRMAÇÃO DE PAGAMENTO',
+        });
+      }
+    });
+
+    // Atualiza pedido com payment_id do MP
+    if (state.pedido && result.payment_id) {
+      state.pedido.mpPaymentId = result.payment_id;
+      state.pedido.mpStatus = result.status || 'pending';
+    }
+
+    // WhatsApp
+    const sendBtn = $('sendOrderWhatsapp');
+    if (sendBtn) sendBtn.href = montarLinkWhatsapp();
+
+    goToStep('confirm');
+  }
+
+  /* ---------- Helper: gera QR Code data URL ---------- */
+  function gerarQrCodeDataUrl(text, size) {
+    try {
+      if (typeof qrcode === 'undefined') return '';
+      const qr = qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      const cellSize = Math.max(2, Math.floor(size / qr.getModuleCount()));
+      return qr.createDataURL(cellSize, 0);
+    } catch (e) {
+      console.warn('[checkout] erro QR Code:', e);
+      return '';
+    }
+  }
+
+  /* ---------- Helpers de formatação (CPF/CNPJ/Telefone) ---------- */
+  function formatarCpfCnpj(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 14);
+    if (v.length <= 11) {
+      // CPF: 000.000.000-00
+      v = v.replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+      // CNPJ: 00.000.000/0000-00
+      v = v.replace(/(\d{2})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d)/, '$1.$2')
+           .replace(/(\d{3})(\d)/, '$1/$2')
+           .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+    }
+    input.value = v;
+  }
+
+  function formatarTelefone(input) {
+    let v = input.value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 6) {
+      // Celular: (00) 00000-0000
+      v = `(${v.slice(0,2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+    } else if (v.length > 2) {
+      v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+    } else if (v.length > 0) {
+      v = `(${v}`;
+    }
+    input.value = v;
+  }
+
+  /* ---------- Verifica retorno do MP via URL ---------- */
+  // Caso o cliente venha de fluxo de Checkout Pro (redirecionamento)
+  function verificarRetornoMP() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('mp_status') || params.get('collection_status');
+    const pedido = params.get('pedido');
+    if (!status || !pedido) return;
+
+    // Traduz status
+    const traducao = global.CDBMercadoPago?.traduzirStatus(status, '') ||
+      { title: 'Status: ' + status, msg: '', classe: 'pending' };
+
+    // Cria uma notificação no topo da página
+    const banner = document.createElement('div');
+    banner.className = 'mp-return-banner mp-return-' + traducao.classe;
+    banner.innerHTML = `
+      <div class="mp-return-inner">
+        <div class="mp-return-icon">${traducao.classe === 'success' ? '✓' : '!'}</div>
+        <div class="mp-return-text">
+          <strong>${escapeHTML(traducao.title)}</strong>
+          <span>Pedido ${escapeHTML(pedido)} — ${escapeHTML(traducao.msg)}</span>
+        </div>
+        <button class="mp-return-close" aria-label="Fechar">×</button>
+      </div>
+    `;
+    document.body.appendChild(banner);
+    banner.querySelector('.mp-return-close')?.addEventListener('click', () => {
+      banner.remove();
+      // Limpa URL
+      const url = window.location.pathname;
+      window.history.replaceState({}, document.title, url);
+    });
+    // Auto-fecha após 15s
+    setTimeout(() => {
+      if (banner.parentNode) banner.remove();
+      const url = window.location.pathname;
+      window.history.replaceState({}, document.title, url);
+    }, 15000);
+  }
+
   function abrirWhatsappComPedido() {
     const url = montarLinkWhatsapp();
     window.open(url, '_blank');
@@ -632,6 +1222,20 @@
         alert('Preencha nome e telefone para continuar.');
         return;
       }
+      // Valida e-mail (exigido pelo Mercado Pago para cartão)
+      const email = $('ck-email').value.trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Preencha um e-mail válido para continuar.');
+        $('ck-email').focus();
+        return;
+      }
+      // Valida CPF/CNPJ
+      const doc = $('ck-cpf').value.replace(/\D/g, '');
+      if (doc.length !== 11 && doc.length !== 14) {
+        alert('Preencha um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
+        $('ck-cpf').focus();
+        return;
+      }
       // Valida número do endereço (se NÃO for retirada)
       const isRetirada = state.shippingOption?.retirada;
       if (!isRetirada) {
@@ -661,8 +1265,19 @@
       close();
     });
 
+    // Adiciona formatação automática do CPF/CNPJ e máscara de telefone
+    $('ck-cpf')?.addEventListener('input', (e) => {
+      formatarCpfCnpj(e.target);
+    });
+    $('ck-telefone')?.addEventListener('input', (e) => {
+      formatarTelefone(e.target);
+    });
+
     // Recebe evento "open checkout" do cart.js
     global.addEventListener('cdb:open-checkout', open);
+
+    // Verifica se voltou do MP com status na URL
+    verificarRetornoMP();
   }
 
   if (document.readyState === 'loading') {

@@ -126,9 +126,11 @@ O QR Code é gerado no navegador a partir da sua chave Pix. O cliente paga
 direto na sua conta — você não paga taxa de intermediário. **Sem necessidade de
 backend.**
 
-### Cartão e Pix Mercado Pago (opcional, com taxa)
-Para aceitar cartão de crédito (até 12x) ou usar o QR Code dinâmico do Mercado
-Pago, siga os passos abaixo para configurar o Cloudflare Worker (gratuito).
+### Cartão no próprio site (Checkout Transparente) e Pix Mercado Pago (com taxa)
+Para aceitar **cartão de crédito no próprio site** (sem redirecionar para o MP) com
+parcelamento, ou usar o QR Code dinâmico do Mercado Pago, siga os passos abaixo
+para configurar o Cloudflare Worker (gratuito). **O Worker é obrigatório** para o
+checkout transparente, pois o Access Token do MP não pode ficar exposto no navegador.
 
 ### WhatsApp (sem taxa)
 O cliente finaliza o pedido pelo WhatsApp. Bom para casos onde ele tem
@@ -136,28 +138,80 @@ dúvidas sobre o produto ou o valor do frete.
 
 ---
 
-## ⚙️ Cloudflare Worker (OPCIONAL)
+## ⚙️ Cloudflare Worker (OBRIGATÓRIO para cartão no site)
 
-> **Quando configurar:** quando você quiser **cartão de crédito** via Mercado
-> Pago ou quando quiser um cálculo de frete 100% confiável (sem depender de
-> proxy CORS público).
+> **Quando configurar:**
+> - **OBRIGATÓRIO** para cartão no próprio site (checkout transparente)
+> - Opcional para cálculo de frete 100% confiável (sem depender de proxy CORS)
 
-Siga os passos descritos no topo do arquivo `worker.js`. Resumindo:
+### Passo a passo
 
-1. Crie conta gratuita em [dash.cloudflare.com](https://dash.cloudflare.com)
-2. Workers & Pages → Create application → Create Worker → nomeie `casadosbotoes-worker`
-3. Edit code → cole TODO o conteúdo de `worker.js` → Deploy
-4. Settings → Variables, adicione como **Secrets**:
-   - `MP_ACCESS_TOKEN` = seu access token do Mercado Pago
-     (pegue em [mercadopago.com.br/developers/panel/app](https://www.mercadopago.com.br/developers/panel/app))
-   - `CORREIOS_CONTRATO` = seu contrato dos Correios
-   - `CORREIOS_CARTAO` = seu cartão de postagem
-5. Edite no topo do `worker.js` a constante `ORIGEM_PERMITIDA` para o seu domínio do GitHub Pages
-6. Copie a URL do Worker (algo como `https://casadosbotoes-worker.seu-usuario.workers.dev`)
-7. Em `config.js`, preencha:
-   - `mercadoPago.workerUrl` = essa URL
-   - `correios.workerUrl` = mesma URL
-8. Commit + push → site atualizado
+1. **Crie conta gratuita** em [dash.cloudflare.com](https://dash.cloudflare.com)
+2. Vá em **Workers & Pages → Create application → Create Worker**
+3. Nomeie como `casadosbotoes-worker` e clique em **Deploy**
+4. Clique em **Edit code** e cole TODO o conteúdo de `worker.js` deste repositório
+5. **Salve e faça Deploy**
+6. Vá em **Settings → Variables** e adicione as variáveis abaixo (marque como **Secret** para as sensíveis):
+
+   | Variável | Tipo | Descrição |
+   |----------|------|-----------|
+   | `MP_ACCESS_TOKEN` | **Secret** | Seu access token do Mercado Pago (`APP_USR-...`). Pegue em [mercadopago.com.br/developers/panel/app](https://www.mercadopago.com.br/developers/panel/app) |
+   | `WORKER_HOST` | Texto | O domínio do seu Worker (ex: `casadosbotoes-worker.seu-usuario.workers.dev`). Necessário para o MP chamar o webhook de pagamento |
+   | `CORREIOS_CONTRATO` | Secret | Seu contrato dos Correios (opcional) |
+   | `CORREIOS_CARTAO` | Secret | Seu cartão de postagem dos Correios (opcional) |
+   | `JSONBIN_API_KEY` | Secret | Sua X-Master-Key do JSONBin.io (já está em config.js — mover para o Worker é mais seguro) |
+   | `JSONBIN_BIN_ID` | Texto | ID do bin de pedidos no JSONBin (opcional, mas habilita webhook) |
+
+7. No topo do `worker.js`, atualize `ORIGEM_PERMITIDA` com o seu domínio do GitHub Pages (sem `https://`):
+   ```js
+   const ORIGEM_PERMITIDA = 'casadosbotoes.github.io';
+   ```
+8. Copie a URL do Worker (algo como `https://casadosbotoes-worker.seu-usuario.workers.dev`)
+9. Em `config.js`, preencha:
+   ```js
+   mercadoPago: {
+     publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",  // pública
+     accessToken: "",  // VAZIO — token vive no Worker
+     workerUrl: "https://casadosbotoes-worker.seu-usuario.workers.dev",
+     // ...
+   }
+   ```
+10. **Configure o webhook no Mercado Pago:**
+    - Acesse [mercadopago.com.br/developers/panel/app](https://www.mercadopago.com.br/developers/panel/app)
+    - Clique na sua aplicação → **Notificações/Webhooks**
+    - Em **URL de notificação**, cole: `https://casadosbotoes-worker.seu-usuario.workers.dev/?acao=mp_webhook`
+    - Eventos: marque **Pagamentos** (`payment`)
+    - Salve
+11. Commit + push no GitHub → deploy automático do site
+
+### Fluxo do checkout transparente (como funciona)
+
+1. Cliente preenche carrinho e clica em "Finalizar compra"
+2. Preenche dados (nome, e-mail, CPF/CNPJ, endereço, CEP)
+3. Calcula frete e seleciona "Cartão"
+4. Digita número do cartão → o **SDK MercadoPago.js** detecta a bandeira e busca parcelas automaticamente
+5. Preenche nome, validade, CVV e escolhe o parcelamento
+6. Clica em "Pagar com cartão"
+7. O SDK tokeniza o cartão **no navegador** (PCI compliant — dados nunca passam pelo nosso servidor)
+8. Token + dados do pagador são enviados ao Worker
+9. Worker chama `POST /v1/payments` do MP com o Access Token (que vive no Worker)
+10. MP responde: `approved` / `rejected` / `in_process` (em análise)
+11. Site mostra tela de confirmação com base no status
+12. MP chama o webhook do Worker quando o status muda → atualiza pedido no JSONBin (você vê no painel admin)
+
+### Testar com cartão de teste (sandbox)
+
+Se quiser testar sem usar cartão real:
+
+1. Crie outra aplicação no Mercado Pago em modo **sandbox** (painel do MP)
+2. Pegue `TEST-...` access token e public key
+3. Crie um segundo Worker (ou use o mesmo com variável de ambiente diferente) com `MP_ACCESS_TOKEN` = `TEST-...`
+4. Atualize `config.js` → `mercadoPago.publicKey` = `TEST-...`
+5. Use os cartões de teste do MP: [mercadopago.com.br/developers/pt/docs/checkout-api/integration-configuration/integrate-with-pix/test-cards](https://www.mercadopago.com.br/developers/pt/docs/checkout-api/integration-configuration/integrate-with-pix/test-cards)
+   - Aprovado: `5031 4332 1540 6351` (Master), CVV `123`, validade `11/25`
+   - Recusado: `4024 0071 0686 3621` (Visa)
+6. Teste o fluxo completo
+7. Quando estiver OK, troque de volta para os tokens de produção (`APP_USR-...`)
 
 ---
 

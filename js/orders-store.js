@@ -150,10 +150,26 @@
     return pedido;
   }
 
+  /* ---------- Atualiza um pedido existente (por número) ---------- */
+  // Updates = { mpPaymentId, mpStatus, mpStatusDetail, ... }
+  // Retorna true se atualizou, false se não encontrou o pedido.
+  function atualizar(numero, updates) {
+    if (!numero || !updates) return false;
+    const pedidos = listar();
+    const idx = pedidos.findIndex(p => p && p.numero === numero);
+    if (idx < 0) return false;
+    pedidos[idx] = Object.assign({}, pedidos[idx], updates, {
+      atualizadoEm: new Date().toISOString(),
+    });
+    salvar(pedidos);
+    return true;
+  }
+
   /* ---------- API pública ---------- */
   global.CDBOrders = {
     listar,
     adicionar,
+    atualizar,
     remover,
     limpar,
     parseTxt,

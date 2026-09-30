@@ -44,31 +44,42 @@ window.CDB_CONFIG = {
   },
 
   /* ---------- Mercado Pago (cartão de crédito/débito) ---------- */
-  // Integração com Checkout Pro do Mercado Pago.
-  // Quando o cliente escolhe "Cartão" no checkout, o site cria uma
-  // preferência via API e redireciona para a página do MP pagar.
+  // Integração com Mercado Pago.
   //
-  // ⚠️ AVISO DE SEGURANÇA:
-  // O Access Token abaixo está visível no JavaScript público (GitHub Pages).
-  // Risco limitado: alguém pode criar preferências em seu nome, mas o
-  // dinheiro SEMPRE entra na sua conta. Para 100% de segurança, faça
-  // deploy do worker.js no Cloudflare (grátis) e mova o Access Token
-  // para lá. Veja instruções no README.
+  // ARQUITETURA (SEGURA):
+  //   - PUBLIC KEY: vai no navegador (segura, pode ser exposta)
+  //     — usada pelo SDK MercadoPago.js para tokenizar o cartão.
+  //   - ACCESS TOKEN: fica SOMENTE no Cloudflare Worker (variável de ambiente)
+  //     — nunca vai para o navegador.
+  //   - WORKER URL: endpoint do seu Worker que processa o pagamento.
+  //
+  // ⚠️ IMPORTANTE:
+  //   Sem workerUrl preenchido, o checkout transparente (cartão no site)
+  //   NÃO funciona. O Worker é OBRIGATÓRIO para essa integração.
+  //   Veja instruções de deploy no topo do arquivo worker.js.
+  //
+  // ⚠️ SEGURANÇA:
+  //   NÃO DEIXE o accessToken neste arquivo em produção!
+  //   Mova-o para o Cloudflare Worker como variável de ambiente MP_ACCESS_TOKEN.
+  //   O campo accessToken aqui só existe para o modo fallback (Checkout Pro
+  //   direto do navegador, menos seguro). Se possível, deixe vazio.
   mercadoPago: {
     publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",
+    // [RECOMENDADO DEIXAR VAZIO] — Access Token deve estar no Worker.
     accessToken: "APP_USR-453076602431772-091619-6f1e289a42cdee671b1cc1b4f87728e2-3696429282",
-    // URL do Worker (Cloudflare) para deixar seguro. Se vazio, usa
-    // Access Token direto no front (menos seguro mas funciona).
+    // [OBRIGATÓRIO para checkout transparente] URL do Cloudflare Worker
+    // ex: "https://casadosbotoes-worker.seu-usuario.workers.dev"
     workerUrl: "",
-    // URL de retorno após o cliente pagar no MP
+    // URL de retorno após o cliente pagar no MP (Checkout Pro fallback)
     backUrl: "https://casadosbotoes.github.io/loja/",
-    // Métodos de pagamento aceitos no Checkout Pro
+    // Métodos de pagamento aceitos no Checkout Pro (fallback)
     // 'credit_card' = cartão de crédito
     // 'debit_card'  = cartão de débito
     // 'pix'         = Pix via MP (opcional - você já tem Pix direto sem taxa)
     // 'ticket'      = boleto bancário
     metodosAceitos: ["credit_card", "debit_card"],
-    // Parcelamento: 1 = à vista, 12 = até 12x (configurado no painel do MP)
+    // Parcelamento: 1 = à vista, 12 = até 12x (limita as opções mostradas
+    // no select de parcelas do checkout transparente)
     maxParcelas: 12,
   },
 

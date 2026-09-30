@@ -45,6 +45,14 @@
 // Ex: "casadosbotoes.github.io"
 const ORIGEM_PERMITIDA = 'casadosbotoes.github.io';
 
+// Host do Worker (para o MP chamar de volta no webhook).
+// Pode ser sobrescrito pela variável de ambiente WORKER_HOST no Cloudflare.
+// Se não definida, usa o mesmo domínio do site (útil apenas se o worker
+// estiver no mesmo domínio, o que geralmente NÃO é o caso — defina WORKER_HOST).
+function getWorkerHost(env) {
+  return env?.WORKER_HOST || ORIGEM_PERMITIDA;
+}
+
 // Endpoint Mercado Pago (produção)
 const MP_API = 'https://api.mercadopago.com';
 
@@ -68,12 +76,26 @@ export default {
 
     // Valida método
     if (request.method !== 'POST') {
+      // Permite GET para o webhook do MP (algumas notificações vêm por GET)
+      if (request.method === 'GET') {
+        const url = new URL(request.url);
+        const acao = url.searchParams.get('acao') || url.searchParams.get('topic');
+        if (acao === 'mp_webhook' || acao === 'merchant_order' || acao === 'payment') {
+          return await handleWebhookGET(url.searchParams, corsHeaders, env);
+        }
+      }
       return jsonError(corsHeaders, 405, 'Método não permitido');
     }
 
     // Valida origem
+    // Para webhook do MP, a origem é do MP (api.mercadopago.com), não do site.
+    // Detecta se é webhook pela presença de body.acao === 'mp_webhook' ou por query string.
+    const url = new URL(request.url);
+    const isWebhook = url.searchParams.get('acao') === 'mp_webhook' ||
+                      url.searchParams.get('topic') ||
+                      url.searchParams.get('data.id');
     const origin = request.headers.get('Origin') || '';
-    if (!origin.includes(ORIGEM_PERMITIDA)) {
+    if (!isWebhook && !origin.includes(ORIGEM_PERMITIDA)) {
       return jsonError(corsHeaders, 403, 'Origem não autorizada');
     }
 
@@ -82,7 +104,17 @@ export default {
     try {
       body = await request.json();
     } catch (e) {
-      return jsonError(corsHeaders, 400, 'JSON inválido');
+      // Se for webhook do MP (POST sem body JSON válido), pode ser form-encoded
+      body = {};
+    }
+
+    // Detecta webhook do MP (POST com topic/data.id)
+    const isWebhookPost = url.searchParams.get('acao') === 'mp_webhook' ||
+                          url.searchParams.get('topic') ||
+                          url.searchParams.get('data.id') ||
+                          body.topic || body.action;
+    if (isWebhookPost) {
+      return await handleWebhookPOST(url.searchParams, body, corsHeaders, env);
     }
 
     // Roteamento por ação
@@ -93,6 +125,8 @@ export default {
         case 'mp_pix':
         case 'mp_cartao':
           return await handleMercadoPago(body, corsHeaders, env);
+        case 'mp_process_payment':
+          return await handleProcessPayment(body, corsHeaders, env);
         default:
           return jsonError(corsHeaders, 400, 'Ação desconhecida');
       }
@@ -300,4 +334,245 @@ async function handleMercadoPago(body, headers, env) {
     payment_id: payData.id,
     status: payData.status,
   });
+}
+
+/* ============================================================
+ * CHECKOUT TRANSPARENTE — Processa pagamento de cartão
+ * ============================================================
+ * Recebe do navegador:
+ *   { acao: 'mp_process_payment',
+ *     token, paymentMethodId, installments, issuerId,
+ *     transactionAmount, description, externalReference,
+ *     payer: { email, firstName, lastName, identificationType, identificationNumber, phone },
+ *     items, shippingOption }
+ *
+ * Cria o pagamento no MP via POST /v1/payments.
+ * Retorna: { status, status_detail, payment_id, message }
+ */
+async function handleProcessPayment(body, headers, env) {
+  const accessToken = env.MP_ACCESS_TOKEN;
+  if (!accessToken) {
+    return jsonError(headers, 500, 'MP_ACCESS_TOKEN não configurado no Worker');
+  }
+
+  const { token, paymentMethodId, installments, issuerId,
+          transactionAmount, description, externalReference,
+          payer, items, shippingOption } = body;
+
+  // Validações
+  if (!token) return jsonError(headers, 400, 'Token do cartão ausente');
+  if (!paymentMethodId) return jsonError(headers, 400, 'paymentMethodId ausente');
+  if (!transactionAmount) return jsonError(headers, 400, 'transactionAmount ausente');
+  if (!payer || !payer.email) return jsonError(headers, 400, 'E-mail do pagador ausente');
+  if (!payer.identificationNumber || !payer.identificationType) {
+    return jsonError(headers, 400, 'CPF/CNPJ do pagador ausente');
+  }
+
+  // Monta payload para o MP
+  // Doc: https://www.mercadopago.com.br/developers/pt/reference/payments/_payments/post
+  const paymentPayload = {
+    transaction_amount: parseFloat(transactionAmount),
+    token: token,
+    description: description || ('Pedido ' + (externalReference || '')),
+    installments: parseInt(installments, 10) || 1,
+    payment_method_id: paymentMethodId,
+    issuer_id: issuerId ? String(issuerId) : undefined,
+    payer: {
+      email: payer.email,
+      first_name: payer.firstName || 'Cliente',
+      last_name: payer.lastName || '',
+      identification: {
+        type: payer.identificationType,    // 'CPF' | 'CNPJ'
+        number: String(payer.identificationNumber).replace(/\D/g, ''),
+      },
+      phone: payer.phone ? {
+        area_code: String(payer.phone.areaCode || '16'),
+        number: Number(payer.phone.number) || 999999999,
+      } : undefined,
+    },
+    external_reference: externalReference,
+    statement_descriptor: 'CASA DOS BOTOES',
+    // binary_mode: true → não aceita status pendente (recusa se não puder aprovar na hora)
+    // binary_mode: false → aceita pending/in_process (cartão em análise)
+    binary_mode: false,
+    // URL que o MP vai chamar quando o status mudar (webhook)
+    notification_url: `https://${getWorkerHost(env)}/?acao=mp_webhook`,
+    metadata: {
+      pedido_numero: externalReference,
+      items: (items || []).map(i => ({
+        id: i.id,
+        nome: i.nome,
+        qty: i.qty,
+        preco: i.preco,
+      })),
+      shipping: shippingOption ? {
+        nome: shippingOption.nome,
+        valor: shippingOption.valor,
+        retirada: shippingOption.retirada || false,
+      } : null,
+    },
+  };
+
+  // Remove campos undefined
+  Object.keys(paymentPayload).forEach(k => paymentPayload[k] === undefined && delete paymentPayload[k]);
+  if (paymentPayload.payer) {
+    Object.keys(paymentPayload.payer).forEach(k => paymentPayload.payer[k] === undefined && delete paymentPayload.payer[k]);
+    if (paymentPayload.payer.phone) {
+      Object.keys(paymentPayload.payer.phone).forEach(k => paymentPayload.payer.phone[k] === undefined && delete paymentPayload.payer.phone[k]);
+    }
+    if (paymentPayload.payer.identification) {
+      Object.keys(paymentPayload.payer.identification).forEach(k => paymentPayload.payer.identification[k] === undefined && delete paymentPayload.payer.identification[k]);
+    }
+  }
+
+  const resp = await fetch(`${MP_API}/v1/payments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+      'X-Idempotency-Key': externalReference || crypto.randomUUID(),
+    },
+    body: JSON.stringify(paymentPayload),
+  });
+
+  if (!resp.ok) {
+    const txt = await resp.text();
+    console.error('MP payment error:', resp.status, txt);
+    let errMsg = `Mercado Pago HTTP ${resp.status}`;
+    try {
+      const errData = JSON.parse(txt);
+      if (errData.message) errMsg += ': ' + errData.message;
+      if (errData.cause && Array.isArray(errData.cause)) {
+        errMsg += ' | ' + errData.cause.map(c => c.description).join('; ');
+      }
+    } catch (e) {}
+    return jsonError(headers, resp.status, errMsg);
+  }
+
+  const data = await resp.json();
+  return jsonOk(headers, {
+    status: data.status,             // 'approved' | 'rejected' | 'in_process' | 'pending' | 'cancelled'
+    status_detail: data.status_detail,
+    payment_id: data.id,
+    message: traduzirStatusInterno(data.status, data.status_detail),
+  });
+}
+
+/* ---------- Webhook do MP (POST) ---------- */
+// MP envia: POST https://.../?acao=mp_webhook
+// Body: { action: 'payment.updated', data: { id: '1234567890' }, ... }
+async function handleWebhookPOST(query, body, headers, env) {
+  // Não bloqueia a resposta ao MP — confirma recebimento rápido.
+  // Em background, busca o payment e atualiza o pedido no JSONBin.
+
+  const paymentId = body?.data?.id || query.get('data.id') || query.get('payment_id');
+  const topic = body?.topic || query.get('topic') || body?.action || 'payment';
+
+  console.log('[webhook] Recebido:', { topic, paymentId, body });
+
+  if (!paymentId || (topic !== 'payment' && topic !== 'payment.updated')) {
+    // Webhook de merchant_order ou outro — apenas confirma
+    return jsonOk(headers, { received: true, ignored: topic });
+  }
+
+  // Em background (sem await), busca o pagamento e atualiza JSONBin
+  // Como Cloudflare Workers não têm "background", fazemos aqui mas rápido.
+  try {
+    await atualizarPedidoDoPagamento(String(paymentId), env);
+  } catch (e) {
+    console.warn('[webhook] erro ao atualizar pedido:', e);
+  }
+
+  return jsonOk(headers, { received: true, payment_id: paymentId });
+}
+
+/* ---------- Webhook do MP (GET — usado em alguns fluxos) ---------- */
+async function handleWebhookGET(query, headers, env) {
+  const paymentId = query.get('data.id') || query.get('payment_id');
+  const topic = query.get('topic') || 'payment';
+  console.log('[webhook GET]', { topic, paymentId });
+  if (!paymentId) {
+    return jsonOk(headers, { received: true, no_payment_id: true });
+  }
+  try {
+    await atualizarPedidoDoPagamento(String(paymentId), env);
+  } catch (e) {
+    console.warn('[webhook GET] erro:', e);
+  }
+  return jsonOk(headers, { received: true, payment_id: paymentId });
+}
+
+/* ---------- Busca pagamento no MP e atualiza o pedido no JSONBin ---------- */
+async function atualizarPedidoDoPagamento(paymentId, env) {
+  const accessToken = env.MP_ACCESS_TOKEN;
+  if (!accessToken) return;
+
+  const resp = await fetch(`${MP_API}/v1/payments/${paymentId}`, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${accessToken}` },
+  });
+  if (!resp.ok) {
+    console.warn(`[webhook] pagamento ${paymentId} HTTP ${resp.status}`);
+    return;
+  }
+  const payment = await resp.json();
+  const numeroPedido = payment.external_reference;
+  if (!numeroPedido) {
+    console.warn('[webhook] pagamento sem external_reference');
+    return;
+  }
+
+  console.log(`[webhook] Pagamento ${paymentId} (pedido ${numeroPedido}): ${payment.status} / ${payment.status_detail}`);
+
+  // Atualiza o pedido no JSONBin (se configurado)
+  const jsonbinKey = env.JSONBIN_API_KEY;
+  const jsonbinBin = env.JSONBIN_BIN_ID;
+  if (jsonbinKey && jsonbinBin) {
+    try {
+      // Lê o bin de pedidos
+      const getResp = await fetch(`https://api.jsonbin.io/v3/b/${jsonbinBin}/latest`, {
+        method: 'GET',
+        headers: {
+          'X-Master-Key': jsonbinKey,
+          'Cache-Control': 'no-cache',
+        },
+      });
+      if (getResp.ok) {
+        const json = await getResp.json();
+        const data = json.record || {};
+        const pedidos = data.pedidos || [];
+        const idx = pedidos.findIndex(p => p && p.numero === numeroPedido);
+        if (idx >= 0) {
+          pedidos[idx].mpPaymentId = payment.id;
+          pedidos[idx].mpStatus = payment.status;
+          pedidos[idx].mpStatusDetail = payment.status_detail;
+          pedidos[idx].atualizadoEm = new Date().toISOString();
+          data.pedidos = pedidos;
+          await fetch(`https://api.jsonbin.io/v3/b/${jsonbinBin}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Master-Key': jsonbinKey,
+            },
+            body: JSON.stringify(data),
+          });
+          console.log(`[webhook] Pedido ${numeroPedido} atualizado no JSONBin`);
+        }
+      }
+    } catch (e) {
+      console.warn('[webhook] erro JSONBin:', e);
+    }
+  }
+}
+
+/* ---------- Tradução interna de status (usada no webhook log) ---------- */
+function traduzirStatusInterno(status, detail) {
+  const map = {
+    approved: 'Pagamento aprovado',
+    rejected: 'Pagamento recusado',
+    in_process: 'Pagamento em análise',
+    pending: 'Pagamento pendente',
+    cancelled: 'Pagamento cancelado',
+  };
+  return map[status] || 'Status desconhecido';
 }
