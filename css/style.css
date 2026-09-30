@@ -1125,40 +1125,50 @@ ul { list-style: none; }
   color: #fff;
 }
 
-/* Badges de estoque */
-.product-badge.badge-estoque {
-  background: #2e7d32;
-  color: #fff;
-}
-.product-badge.badge-disponivel {
-  background: #1976d2;
-  color: #fff;
-}
-.product-badge.badge-pacote {
-  background: #1976d2;
-  color: #fff;
-}
 .product-price-per-unit {
   font-size: 0.72rem;
   color: var(--c-texto-claro);
   font-style: italic;
   margin-top: 2px;
 }
-.product-badge.badge-pouco {
-  background: #f57c00;
-  color: #fff;
-  animation: pulse-low-stock 1.5s ease-in-out infinite;
-}
-.product-badge.badge-esgotado {
-  background: #c62828;
-  color: #fff;
-}
-@keyframes pulse-low-stock {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
 
-/* Card de produto esgotado */
+/* Bloco de estoque no modal de detalhes do produto (não aparece mais na foto) */
+.product-modal-estoque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+.product-modal-estoque .estoque-icone {
+  font-size: 0.7rem;
+  line-height: 1;
+  margin-top: 2px;
+}
+.product-modal-estoque .estoque-texto strong { font-weight: 700; }
+.product-modal-estoque.disponivel {
+  background: #e7f4e8;
+  color: #1b5e20;
+  border: 1px solid #c5e1c6;
+}
+.product-modal-estoque.disponivel .estoque-icone { color: #2e7d32; }
+.product-modal-estoque.pouco {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+.product-modal-estoque.pouco .estoque-icone { color: #f57c00; }
+.product-modal-estoque.esgotado {
+  background: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c5c2;
+}
+.product-modal-estoque.esgotado .estoque-icone { color: #c62828; }
+
+/* Card de produto esgotado (apenas indicação visual sutil, sem texto na foto) */
 .product-card.esgotado {
   opacity: 0.75;
 }

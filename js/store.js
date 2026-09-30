@@ -146,21 +146,16 @@
       const hasGaleria = imgs.length > 1;
       const galeriaBadges = hasGaleria ? `<span class="product-badge badge-galeria">📷 ${imgs.length} fotos</span>` : '';
 
-      // Estoque: mostra no badge e desabilita botão se esgotado
-      let estoqueBadge = '';
+      // Estoque: NÃO exibir badges na foto (informação vai no modal de detalhes)
+      // Mantemos apenas o estado visual do card para o caso de esgotado
       let botaoCarrinho = '';
       let cardEsgotado = '';
       if (global.CDBEstoque && p.estoque !== undefined && p.estoque !== 9999) {
         const atual = global.CDBEstoque.getEstoque(p.id);
         if (atual === 0) {
-          estoqueBadge = '<span class="product-badge badge-esgotado">Esgotado</span>';
           botaoCarrinho = '<button class="btn-add-cart" disabled style="opacity:0.5;cursor:not-allowed">Esgotado</button>';
           cardEsgotado = 'esgotado';
-        } else if (atual <= 5) {
-          estoqueBadge = `<span class="product-badge badge-pouco">Restam ${atual}</span>`;
-          botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
         } else {
-          estoqueBadge = `<span class="product-badge badge-estoque">${atual} em estoque</span>`;
           botaoCarrinho = `<button class="btn-add-cart" data-action="add">+ Carrinho</button>`;
         }
       } else {
@@ -170,7 +165,7 @@
       return `
         <article class="product-card ${cardEsgotado}" data-id="${p.id}">
           <div class="product-img" data-action="view">
-            <div class="product-badges">${badges.join('')}${galeriaBadges}${estoqueBadge}</div>
+            <div class="product-badges">${badges.join('')}${galeriaBadges}</div>
             <img src="images/products/${imgPrincipal}" alt="${escapeHTML(p.nome)}" loading="lazy"
                  onerror="this.onerror=null;this.src='images/products/${imgPrincipal.replace(/\.webp$/, '.jpg')}'">
           </div>
@@ -246,6 +241,40 @@
       </div>
     ` : '';
 
+    // Bloco de estoque (mostrado APENAS nos detalhes do produto, nunca na foto)
+    let estoqueHtml = '';
+    let btnAddHtml = `<button class="btn btn-primary" data-action="add">Adicionar ao carrinho</button>`;
+    if (global.CDBEstoque && p.estoque !== undefined && p.estoque !== 9999) {
+      const atual = global.CDBEstoque.getEstoque(p.id);
+      if (atual === 0) {
+        estoqueHtml = `
+          <div class="product-modal-estoque esgotado">
+            <span class="estoque-icone">●</span>
+            <span class="estoque-texto">Esgotado — produto indisponível no momento</span>
+          </div>`;
+        btnAddHtml = `<button class="btn btn-primary" disabled style="opacity:0.5;cursor:not-allowed">Esgotado</button>`;
+      } else if (atual <= 5) {
+        estoqueHtml = `
+          <div class="product-modal-estoque pouco">
+            <span class="estoque-icone">●</span>
+            <span class="estoque-texto">Apenas <strong>${atual}</strong> em estoque — compre logo!</span>
+          </div>`;
+      } else {
+        estoqueHtml = `
+          <div class="product-modal-estoque disponivel">
+            <span class="estoque-icone">●</span>
+            <span class="estoque-texto"><strong>${atual}</strong> em estoque</span>
+          </div>`;
+      }
+    } else {
+      // Produto sem controle de estoque ou com estoque ilimitado
+      estoqueHtml = `
+        <div class="product-modal-estoque disponivel">
+          <span class="estoque-icone">●</span>
+          <span class="estoque-texto">Produto disponível para pronta entrega</span>
+        </div>`;
+    }
+
     body.innerHTML = `
       <div class="product-modal-grid">
         <div class="product-modal-img">
@@ -265,8 +294,9 @@
             <h4>Detalhes do produto</h4>
             <ul>${detalhes}</ul>
           </div>
+          ${estoqueHtml}
           <div class="product-modal-actions">
-            <button class="btn btn-primary" data-action="add">Adicionar ao carrinho</button>
+            ${btnAddHtml}
             <button class="btn btn-outline" data-action="wpp">Chamar no WhatsApp</button>
           </div>
         </div>

@@ -584,11 +584,11 @@ window.CDB_PRODUCTS = [
       "Categoria: Plastico",
     ],
     images: [
-      "botao-plastico-durado-23mm-1.webp",
-      "botao-plastico-durado-23mm-2.webp",
-      "botao-plastico-durado-23mm-3.webp",
+      "botao-plastico-dourado-23mm-1.webp",
+      "botao-plastico-dourado-23mm-2.webp",
+      "botao-plastico-dourado-23mm-3.webp",
     ],
-    image: "botao-plastico-durado-23mm-1.webp",
+    image: "botao-plastico-dourado-23mm-1.webp",
     dimensao: { pesoG: 90, comprimentoCm: 20, larguraCm: 14, alturaCm: 3 },
   },
   {
