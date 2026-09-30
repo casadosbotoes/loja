@@ -65,18 +65,14 @@ window.CDB_CONFIG = {
   //   direto do navegador, menos seguro). Se possível, deixe vazio.
   mercadoPago: {
     publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",
-    // [RECOMENDADO DEIXAR VAZIO] — Access Token deve estar no Worker.
-    accessToken: "APP_USR-453076602431772-091619-6f1e289a42cdee671b1cc1b4f87728e2-3696429282",
-    // [OBRIGATÓRIO para checkout transparente] URL do Cloudflare Worker
-    // ex: "https://casadosbotoes-worker.seu-usuario.workers.dev"
-    workerUrl: "",
+    // Access Token vive SOMENTE no Cloudflare Worker (variável MP_ACCESS_TOKEN).
+    // Não coloque aqui — deixe vazio.
+    accessToken: "",
+    // URL do Cloudflare Worker (processa pagamentos com cartão de forma segura)
+    workerUrl: "https://casadosbotoes-worker.dercat.workers.dev",
     // URL de retorno após o cliente pagar no MP (Checkout Pro fallback)
     backUrl: "https://casadosbotoes.github.io/loja/",
     // Métodos de pagamento aceitos no Checkout Pro (fallback)
-    // 'credit_card' = cartão de crédito
-    // 'debit_card'  = cartão de débito
-    // 'pix'         = Pix via MP (opcional - você já tem Pix direto sem taxa)
-    // 'ticket'      = boleto bancário
     metodosAceitos: ["credit_card", "debit_card"],
     // Parcelamento: 1 = à vista, 12 = até 12x (limita as opções mostradas
     // no select de parcelas do checkout transparente)
