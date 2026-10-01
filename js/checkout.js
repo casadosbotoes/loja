@@ -361,6 +361,20 @@
       if (!isRetirada && !cliente.numero) {
         throw new Error('Por favor, preencha o NÚMERO do endereço para entrega.');
       }
+      // Valida e-mail e CPF/CNPJ para pagamento com CARTÃO (Mercado Pago exige)
+      if (state.paymentMethod === 'cartao') {
+        const email = $('ck-email')?.value.trim() || '';
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          throw new Error('Para pagar com cartão, preencha um e-mail válido.');
+        }
+        const doc = ($('ck-cpf')?.value || '').replace(/\D/g, '');
+        if (doc.length !== 11 && doc.length !== 14) {
+          throw new Error('Para pagar com cartão, preencha um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
+        }
+        // Adiciona e-mail e CPF ao cliente para uso pelo Mercado Pago
+        cliente.email = email;
+        cliente.cpf = doc;
+      }
 
       // Valida estoque de TODOS os itens antes de confirmar
       if (global.CDBEstoque) {
@@ -1222,20 +1236,8 @@
         alert('Preencha nome e telefone para continuar.');
         return;
       }
-      // Valida e-mail (exigido pelo Mercado Pago para cartão)
-      const email = $('ck-email').value.trim();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert('Preencha um e-mail válido para continuar.');
-        $('ck-email').focus();
-        return;
-      }
-      // Valida CPF/CNPJ
-      const doc = $('ck-cpf').value.replace(/\D/g, '');
-      if (doc.length !== 11 && doc.length !== 14) {
-        alert('Preencha um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.');
-        $('ck-cpf').focus();
-        return;
-      }
+      // NOTA: E-mail e CPF/CNPJ são opcionais para Pix e WhatsApp
+      // (só obrigatórios para Cartão via Mercado Pago - validado no onConfirmOrder)
       // Valida número do endereço (se NÃO for retirada)
       const isRetirada = state.shippingOption?.retirada;
       if (!isRetirada) {
