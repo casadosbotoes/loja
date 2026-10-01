@@ -64,10 +64,10 @@ window.CDB_CONFIG = {
   //   O campo accessToken aqui só existe para o modo fallback (Checkout Pro
   //   direto do navegador, menos seguro). Se possível, deixe vazio.
   mercadoPago: {
-    publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",
+    publicKey: "APP_USR-288d8bbb-ed57-4853-9835-4914e4c847bd",
     // Access Token vive SOMENTE no Cloudflare Worker (variável MP_ACCESS_TOKEN).
     // Não coloque aqui — deixe vazio.
-    accessToken: "APP_USR-453076602431772-091619-6f1e289a42cdee671b1cc1b4f87728e2-3696429282",
+    accessToken: "APP_USR-7836394491379507-093019-bd43229e1dc79cd025f169b39cedd46f-171570880",
     // URL do Cloudflare Worker (processa pagamentos com cartão de forma segura)
     // ⚠️ Worker OFFLINE - usando Checkout Pro (redireciona pro MP) como fallback
     // Para voltar ao checkout transparente (form dentro do site):
