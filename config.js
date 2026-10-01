@@ -67,9 +67,13 @@ window.CDB_CONFIG = {
     publicKey: "APP_USR-edee01bb-34ee-44f1-8379-21702c6941f0",
     // Access Token vive SOMENTE no Cloudflare Worker (variável MP_ACCESS_TOKEN).
     // Não coloque aqui — deixe vazio.
-    accessToken: "",
+    accessToken: "APP_USR-453076602431772-091619-6f1e289a42cdee671b1cc1b4f87728e2-3696429282",
     // URL do Cloudflare Worker (processa pagamentos com cartão de forma segura)
-    workerUrl: "https://casadosbotoes-worker.dercat.workers.dev",
+    // ⚠️ Worker OFFLINE - usando Checkout Pro (redireciona pro MP) como fallback
+    // Para voltar ao checkout transparente (form dentro do site):
+    // 1. Re-deploy do worker.js no Cloudflare
+    // 2. Verifique se a URL abaixo aponta para o Worker ativo
+    workerUrl: "",
     // URL de retorno após o cliente pagar no MP (Checkout Pro fallback)
     backUrl: "https://casadosbotoes.github.io/loja/",
     // Métodos de pagamento aceitos no Checkout Pro (fallback)
