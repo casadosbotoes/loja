@@ -248,7 +248,7 @@ window.CDB_CONFIG = {
   /* ---------- Opções de checkout ---------- */
   checkout: {
     // Formas de pagamento disponíveis (ordem dos botões)
-    metodos: ["pix", "cartao", "whatsapp"],
+    metodos: ["pix", "whatsapp"], // cartao removido temporariamente (MP nao certificado)
     // Exige CEP para calcular frete antes de finalizar
     exigirCep: true,
     // Mensagem de aviso mostrada no checkout
