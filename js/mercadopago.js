@@ -269,7 +269,7 @@
           receiver_address: {
             zip_code: pedido.cliente.cep?.replace(/\D/g, '') || '',
             street_name: pedido.cliente.endereco || '',
-            city_name: { name: pedido.cliente.cidade || '' },
+            city_name: pedido.cliente.cidade || '',
             state_name: pedido.cliente.uf || '',
           },
         };
