@@ -75,7 +75,7 @@ window.CDB_CONFIG = {
     // 2. Verifique se a URL abaixo aponta para o Worker ativo
     workerUrl: "",
     // URL de retorno após o cliente pagar no MP (Checkout Pro fallback)
-    backUrl: "https://casadosbotoes.github.io/loja/",
+    backUrl: "https://casadosbotoes.com/",
     // Métodos de pagamento aceitos no Checkout Pro (fallback)
     metodosAceitos: ["credit_card", "debit_card"],
     // Parcelamento: 1 = à vista, 12 = até 12x (limita as opções mostradas
