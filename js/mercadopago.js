@@ -189,8 +189,11 @@
       throw new Error(`MP HTTP ${resp.status}: ${txt}`);
     }
     const data = await resp.json();
+    // Detecta se está em modo sandbox (credencial TEST-) e usa sandbox_init_point
+    const isSandbox = cfg.accessToken?.startsWith('TEST-');
+    const initPoint = isSandbox ? (data.sandbox_init_point || data.init_point) : data.init_point;
     return {
-      init_point: data.init_point,
+      init_point: initPoint,
       sandbox_init_point: data.sandbox_init_point,
       preference_id: data.id,
     };
