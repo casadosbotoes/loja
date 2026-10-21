@@ -70,11 +70,7 @@ window.CDB_CONFIG = {
     // sem precisar de Worker. Access Token fica visível no JS público.
     accessToken: "APP_USR-7836394491379507-093019-bd43229e1dc79cd025f169b39cedd46f-171570880",
     // URL do Cloudflare Worker (processa pagamentos com cartão de forma segura)
-    // ⚠️ Worker OFFLINE - usando Checkout Pro (redireciona pro MP) como fallback
-    // Para voltar ao checkout transparente (form dentro do site):
-    // 1. Re-deploy do worker.js no Cloudflare
-    // 2. Verifique se a URL abaixo aponta para o Worker ativo
-    workerUrl: "",
+    workerUrl: "https://casadosbotoes-mp.dercat.workers.dev",
     // URL de retorno após o cliente pagar no MP (Checkout Pro fallback)
     backUrl: "https://casadosbotoes.com/",
     // Métodos de pagamento aceitos no Checkout Pro (fallback)
