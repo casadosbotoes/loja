@@ -65,16 +65,10 @@ window.CDB_CONFIG = {
   //   direto do navegador, menos seguro). Se possível, deixe vazio.
   mercadoPago: {
     publicKey: "APP_USR-288d8bbb-ed57-4853-9835-4914e4c847bd",
-    // Access Token vive SOMENTE no Cloudflare Worker (variável MP_ACCESS_TOKEN).
-    // Não coloque aqui — deixe vazio.
-    // ⚠️ ATENÇÃO: Aplicação NÃO CERTIFICADA pelo MP (certification_status: not_certified)
-    // Por isso, pagamentos de produção falham com "Ocorreu um erro"
-    // SOLUÇÃO TEMPORÁRIA: usar Access Token de TESTE (modo sandbox)
-    // Testar com cartões de teste do MP (sem dinheiro real):
-    //   Visa aprovado: 4235 6477 2802 5682 (qualquer validade futura, CVV 123)
-    //   Master aprovado: 5031 4332 1540 6351
-    //   Visa recusado: 4023 6448 3087 2486
-    accessToken: "TEST-7836394491379507-093019-321c449da45941b902d70f5c4fae98b6-171570880",
+    // Access Token de PRODUÇÃO (conta real do Marcelo)
+    // Usado para Checkout Transparente (cartão processado direto no site)
+    // sem precisar de Worker. Access Token fica visível no JS público.
+    accessToken: "APP_USR-7836394491379507-093019-bd43229e1dc79cd025f169b39cedd46f-171570880",
     // URL do Cloudflare Worker (processa pagamentos com cartão de forma segura)
     // ⚠️ Worker OFFLINE - usando Checkout Pro (redireciona pro MP) como fallback
     // Para voltar ao checkout transparente (form dentro do site):
@@ -248,7 +242,7 @@ window.CDB_CONFIG = {
   /* ---------- Opções de checkout ---------- */
   checkout: {
     // Formas de pagamento disponíveis (ordem dos botões)
-    metodos: ["pix", "whatsapp"], // cartao removido temporariamente (MP nao certificado)
+    metodos: ["pix", "cartao", "whatsapp"],
     // Exige CEP para calcular frete antes de finalizar
     exigirCep: true,
     // Mensagem de aviso mostrada no checkout

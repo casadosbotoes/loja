@@ -241,7 +241,7 @@
     const metodos = global.CDB_CONFIG?.checkout?.metodos || ['pix', 'cartao', 'whatsapp'];
     const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
     const mpDisponivel = (mpCfg.accessToken && mpCfg.accessToken.length > 20) || (mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
-    const transparenteAtivo = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+    const transparenteAtivo = !!((mpCfg.workerUrl && mpCfg.workerUrl.length > 0) || (mpCfg.accessToken && mpCfg.accessToken.length > 20));
 
     const cards = [];
     for (const m of metodos) {
@@ -296,7 +296,7 @@
       confirmBtn.disabled = false;
     } else if (state.paymentMethod === 'cartao') {
       const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
-      const transparente = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+      const transparente = !!((mpCfg.workerUrl && mpCfg.workerUrl.length > 0) || (mpCfg.accessToken && mpCfg.accessToken.length > 20));
       if (transparente) {
         cont.innerHTML = renderCardForm();
         confirmBtn.textContent = 'Pagar com cartão';
@@ -483,7 +483,7 @@
         await gerarPixLocal(numero, total);
       } else if (state.paymentMethod === 'cartao') {
         const mpCfg = global.CDB_CONFIG?.mercadoPago || {};
-        const transparente = !!(mpCfg.workerUrl && mpCfg.workerUrl.length > 0);
+        const transparente = !!((mpCfg.workerUrl && mpCfg.workerUrl.length > 0) || (mpCfg.accessToken && mpCfg.accessToken.length > 20));
         if (transparente) {
           // Checkout transparente: processa o pagamento via Worker
           await processarPagamentoCartao();

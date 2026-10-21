@@ -128,29 +128,68 @@
   // Retorna: { status, statusDetail, paymentId, message }
   async function processPayment(payload) {
     const cfg = global.CDB_CONFIG?.mercadoPago;
-    if (!cfg?.workerUrl) {
-      throw new Error('mercadoPago.workerUrl não configurado em config.js — obrigatório para checkout transparente.');
+    // Estratégia 1: via Worker (mais seguro)
+    if (cfg?.workerUrl) {
+      const resp = await fetch(cfg.workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'mp_process_payment', ...payload }),
+      });
+      if (!resp.ok) throw new Error(`Worker HTTP ${resp.status}`);
+      const data = await resp.json();
+      if (!data.success) throw new Error(data.error || 'Erro ao processar pagamento');
+      return {
+        status: data.status,
+        statusDetail: data.status_detail,
+        paymentId: data.payment_id,
+        message: data.message || '',
+      };
     }
-    const resp = await fetch(cfg.workerUrl, {
+    // Estratégia 2: direto do front (sem Worker)
+    // Access Token fica exposto no JS — risco limitado (só cria pagamentos na sua conta)
+    if (!cfg?.accessToken) {
+      throw new Error('accessToken não configurado para checkout transparente sem Worker.');
+    }
+    const body = {
+      transaction_amount: Number(payload.transactionAmount),
+      description: payload.description || 'Pedido Casa dos Botões',
+      token: payload.token,
+      installments: Number(payload.installments) || 1,
+      payment_method_id: payload.paymentMethodId,
+      payer: {
+        email: payload.payer.email,
+        first_name: payload.payer.firstName,
+        last_name: payload.payer.lastName,
+        identification: {
+          type: payload.payer.identificationType,
+          number: payload.payer.identificationNumber,
+        },
+      },
+      external_reference: payload.externalReference || '',
+      statement_descriptor: 'CASA DOS BOTOES',
+    };
+    if (payload.issuerId) body.issuer_id = payload.issuerId;
+    const idemKey = payload.externalReference || ('cdb-' + Date.now());
+    const resp = await fetch(`${API_BASE}/v1/payments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        acao: 'mp_process_payment',
-        ...payload,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cfg.accessToken}`,
+        'X-Idempotency-Key': idemKey,
+      },
+      body: JSON.stringify(body),
     });
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => '');
-      throw new Error(`Worker HTTP ${resp.status}: ${txt}`);
-    }
     const data = await resp.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Erro ao processar pagamento');
+    if (!resp.ok) {
+      const cause = data.cause && Array.isArray(data.cause)
+        ? data.cause.map(c => c.description).join('; ')
+        : data.message || 'Erro desconhecido';
+      throw new Error(`MP HTTP ${resp.status}: ${cause}`);
     }
     return {
-      status: data.status,            // 'approved' | 'rejected' | 'in_process' | 'pending'
+      status: data.status,
       statusDetail: data.status_detail,
-      paymentId: data.payment_id,
+      paymentId: data.id,
       message: data.message || '',
     };
   }
